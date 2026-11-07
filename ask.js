@@ -2,7 +2,7 @@
  * 보험 현황 대시보드 — AI 질문하기 (마켓브리핑 ask.js v1 기반, 2026-11-07 — 마켓브리핑 Ask GAS v1.3과 짝)
  * index.html에 <script src="ask.js" defer></script> 한 줄로 붙는다.
  * 비밀번호(mb_ask_token)는 같은 github.io 출처의 마켓브리핑과 공유된다.
- * 2026-11-07: PC(넓은 화면 + 마우스)에서는 떠 있는 창 — 제목줄 드래그로 이동, 우하단 모서리로 크기 조절, 위치·크기 기억.
+ * 2026-11-07: PC(넓은 화면 + 마우스)에서는 떠 있는 창 — 제목줄 드래그로 이동, 왼쪽 위 모서리로 크기 조절, 위치·크기 기억.
  * 서버: 마켓브리핑 Ask GAS 웹앱 (API 키는 GAS에만 있음 — 이 파일에는 비밀값 없음)
  * ASK_URL이 비어 있으면 데모 모드(비밀번호 000000, 가짜 답변)로 동작한다.
  */
@@ -118,8 +118,8 @@ button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit
 .sheet.float .pin-top{min-height:110px}
 .sheet.float .key{height:48px}
 .rz{display:none}
-.sheet.float .rz{display:block;position:absolute;right:0;bottom:0;width:20px;height:20px;cursor:nwse-resize;touch-action:none;
-  background:linear-gradient(135deg,transparent 0 55%,var(--g300) 55% 61%,transparent 61% 72%,var(--g300) 72% 78%,transparent 78%)}
+.sheet.float .rz{display:block;position:absolute;left:0;top:0;width:20px;height:20px;cursor:nwse-resize;touch-action:none;z-index:1;
+  background:linear-gradient(315deg,transparent 0 55%,var(--g300) 55% 61%,transparent 61% 72%,var(--g300) 72% 78%,transparent 78%)}
 .grab{width:36px;height:4px;border-radius:4px;background:var(--g200);margin:10px auto 6px;flex:none}
 .head{display:flex;align-items:center;gap:8px;padding:6px 20px 10px;flex:none}
 .title{font-size:18px;font-weight:800;letter-spacing:-0.03em}
@@ -237,7 +237,7 @@ textarea::placeholder{color:var(--g400)}
     else ['left', 'top', 'width', 'height'].forEach(k => { sheet.style[k] = ''; });
     return f;
   }
-  // 포인터 드래그 공통: 제목줄 = 이동, 우하단 = 크기 조절
+  // 포인터 드래그 공통: 제목줄 = 이동, 왼쪽 위 모서리 = 크기 조절 (오른쪽·아래 변은 고정)
   function dragger(handle, onMove) {
     handle.addEventListener('pointerdown', e => {
       if (!sheet.classList.contains('float') || e.button !== 0 || e.target.closest('.x')) return;
@@ -259,7 +259,12 @@ textarea::placeholder{color:var(--g400)}
     });
   }
   dragger($('.head'), (s, dx, dy) => ({ w: s.w, h: s.h, x: s.x + dx, y: s.y + dy }));
-  dragger($('.rz'), (s, dx, dy) => ({ x: s.x, y: s.y, w: s.w + dx, h: s.h + dy }));
+  dragger($('.rz'), (s, dx, dy) => {
+    const right = s.x + s.w, bottom = s.y + s.h;
+    const w = Math.min(Math.max(s.w - dx, MIN_W), right - GAP);
+    const h = Math.min(Math.max(s.h - dy, MIN_H), bottom - GAP);
+    return { w, h, x: right - w, y: bottom - h };
+  });
   // 제목줄 더블클릭 = 기본 위치·크기로
   $('.head').addEventListener('dblclick', e => {
     if (!sheet.classList.contains('float') || e.target.closest('.x')) return;

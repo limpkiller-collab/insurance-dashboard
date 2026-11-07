@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>내 보험 현황 v3 · 배○○</title>
+<title>우리 가족 보험 현황 v4</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.min.css">
 <script src="https://code.iconify.design/iconify-icon/2.3.0/iconify-icon.min.js"></script>
@@ -102,6 +102,15 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
 ::-webkit-scrollbar-track{background:#0d0d10}
 ::-webkit-scrollbar-thumb{background:#27272a;border-radius:3px}
 
+/* ── Person switch ── */
+.person-seg{display:flex;gap:6px;padding:4px;border-radius:999px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);width:max-content;max-width:100%}
+.person-btn{border:0;background:none;color:#71717a;font:inherit;font-size:13px;font-weight:700;padding:8px 16px;border-radius:999px;cursor:pointer;transition:all .3s cubic-bezier(.16,1,.3,1);display:flex;align-items:center;gap:6px}
+.person-btn .cnt{font-size:11px;font-weight:600;color:#52525b}
+.person-btn.active{background:rgba(251,191,36,.14);color:#fbbf24;box-shadow:inset 0 0 0 1px rgba(251,191,36,.4)}
+.person-btn.active .cnt{color:#a16207}
+.tabs-group{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:24px}
+.tabs-group[hidden]{display:none}
+
 /* Ambient */
 .ambient{position:fixed;inset:0;pointer-events:none;z-index:0}
 </style>
@@ -126,16 +135,20 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
         <iconify-icon icon="solar:shield-check-bold" style="font-size:17px;color:#0d0d10"></iconify-icon>
       </div>
       <div>
-        <div style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#52525b;font-weight:700">DB손해보험 · KB손해보험</div>
-        <div style="font-size:12px;color:#71717a;margin-top:1px">배○○님의 보험 현황</div>
+        <div id="hdr-co" style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#52525b;font-weight:700">DB손해보험 · KB손해보험</div>
+        <div id="hdr-sub" style="font-size:12px;color:#71717a;margin-top:1px">배○○님의 보험 현황</div>
       </div>
     </div>
     <h1 style="font-size:clamp(1.6rem,5vw,2.4rem);font-weight:800;letter-spacing:-.025em;line-height:1.15;color:#fafafa;margin-bottom:6px">가입 보험 한눈에 보기</h1>
-    <p style="color:#52525b;font-size:.9rem;line-height:1.7">총 3개 증권 · 월 납입 보험료 <span style="color:#fbbf24;font-weight:700">236,130원</span> · 발급일 2026.03.31</p>
+    <p id="hdr-sum" style="color:#52525b;font-size:.9rem;line-height:1.7">총 3개 증권 · 월 납입 보험료 <span style="color:#fbbf24;font-weight:700">236,130원</span> · 발급일 2026.03.31</p>
+    <div class="person-seg" role="tablist" aria-label="가입자 선택" style="margin-top:16px">
+      <button class="person-btn active" id="person-me" role="tab" onclick="switchPerson('me')">배○○ <span class="cnt">3</span></button>
+      <button class="person-btn" id="person-wife" role="tab" onclick="switchPerson('wife')">장○○ <span class="cnt">3</span></button>
+    </div>
   </header>
 
   <!-- ── Policy tabs ── -->
-  <div class="fade-up d1" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:24px">
+  <div class="tabs-group fade-up d1" id="tabs-me">
     <button onclick="switchPolicy('p1')" id="tab-p1" class="policy-tab glass active" style="padding:14px 18px;flex:1;min-width:190px">
       <div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#71717a;margin-bottom:4px">실손 · 건강</div>
       <div style="font-weight:700;font-size:.9rem;color:#fafafa;line-height:1.35">다이렉트건강플러스보험<br>1206</div>
@@ -157,6 +170,33 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
       <div style="font-weight:700;font-size:.9rem;color:#fafafa;line-height:1.35">금쪽같은 펫보험<br>(강아지) 25.01</div>
       <div style="margin-top:7px;display:flex;align-items:baseline;gap:4px">
         <span style="font-size:1.05rem;font-weight:800;color:#4ade80">78,727원</span>
+        <span style="font-size:11px;color:#52525b">/월</span>
+      </div>
+    </button>
+  </div>
+
+  <div class="tabs-group fade-up d1" id="tabs-wife" hidden>
+    <button onclick="switchPolicy('w1')" id="tab-w1" class="policy-tab glass" style="padding:14px 18px;flex:1;min-width:190px">
+      <div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#71717a;margin-bottom:4px">실손 · 삼성화재</div>
+      <div style="font-weight:700;font-size:.9rem;color:#fafafa;line-height:1.35">다이렉트 실손의료비보험<br>(2304.3)</div>
+      <div style="margin-top:7px;display:flex;align-items:baseline;gap:4px">
+        <span style="font-size:1.05rem;font-weight:800;color:#fbbf24">17,089원</span>
+        <span style="font-size:11px;color:#52525b">/월 · 할인 후</span>
+      </div>
+    </button>
+    <button onclick="switchPolicy('w2')" id="tab-w2" class="policy-tab glass" style="padding:14px 18px;flex:1;min-width:190px">
+      <div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#71717a;margin-bottom:4px">종신 · DB생명</div>
+      <div style="font-weight:700;font-size:.9rem;color:#fafafa;line-height:1.35">Best Plan 유니버셜<br>더블종신보험</div>
+      <div style="margin-top:7px;display:flex;align-items:baseline;gap:4px">
+        <span style="font-size:1.05rem;font-weight:800;color:#4ade80">90,372원</span>
+        <span style="font-size:11px;color:#52525b">/월 · ~2031 납입</span>
+      </div>
+    </button>
+    <button onclick="switchPolicy('w3')" id="tab-w3" class="policy-tab glass" style="padding:14px 18px;flex:1;min-width:190px">
+      <div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#71717a;margin-bottom:4px">종합 · 암·심뇌혈관</div>
+      <div style="font-weight:700;font-size:.9rem;color:#fafafa;line-height:1.35">행복플러스<br>종합보험2601</div>
+      <div style="margin-top:7px;display:flex;align-items:baseline;gap:4px">
+        <span style="font-size:1.05rem;font-weight:800;color:#818cf8">72,696원</span>
         <span style="font-size:11px;color:#52525b">/월</span>
       </div>
     </button>
@@ -744,6 +784,490 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
 
   </div><!-- /pane p3 -->
 
+  <!-- ════════════════════ WIFE 1: 삼성화재 실손 ════════════════════ -->
+  <div id="pane-w1" class="policy-pane fade-up d2">
+
+    <div class="glass" style="border-radius:1rem;padding:16px 18px;margin-bottom:18px">
+      <div style="font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:#52525b;font-weight:700;margin-bottom:12px">기본 정보</div>
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px">
+        <div><div style="font-size:10px;color:#52525b;margin-bottom:2px">계약번호</div><div style="font-size:.82rem;font-weight:600;color:#d4d4d8">52337****000</div></div>
+        <div><div style="font-size:10px;color:#52525b;margin-bottom:2px">보험기간</div><div style="font-size:.82rem;font-weight:600;color:#d4d4d8">2025.12.03 <span style="font-size:10px;color:#71717a">~2026.12.03</span></div></div>
+        <div><div style="font-size:10px;color:#52525b;margin-bottom:2px">납입방법</div><div style="font-size:.82rem;font-weight:600;color:#d4d4d8">월납 · 1년갱신 / 5년 재가입</div></div>
+        <div><div style="font-size:10px;color:#52525b;margin-bottom:2px">최초 청약일</div><div style="font-size:.82rem;font-weight:600;color:#d4d4d8">2023.12.03</div></div>
+      </div>
+      <div style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,.05);display:flex;gap:16px;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:6px"><div style="width:7px;height:7px;border-radius:2px;background:#a1a1aa"></div><span style="font-size:11px;color:#71717a">정상 보험료</span><span style="font-size:12px;font-weight:700;color:#a1a1aa">19,842원</span></div><div style="display:flex;align-items:center;gap:6px"><div style="width:7px;height:7px;border-radius:2px;background:#fbbf24"></div><span style="font-size:11px;color:#71717a">할인 후</span><span style="font-size:12px;font-weight:700;color:#fbbf24">17,089원</span></div><div style="display:flex;align-items:center;gap:6px"><div style="width:7px;height:7px;border-radius:2px;background:#4ade80"></div><span style="font-size:11px;color:#71717a">무사고·비급여 할인</span><span style="font-size:12px;font-weight:700;color:#4ade80">-2,753원</span></div>
+      </div>
+    </div>
+
+    <div class="filter-bar mb-3" id="filters-w1">
+      <button class="filter-btn active" onclick="filterSlide('w1',0,this)">전체</button>
+      <button class="filter-btn" onclick="filterSlide('w1',1,this)">급여</button>
+      <button class="filter-btn" onclick="filterSlide('w1',2,this)">비급여</button>
+      <button class="filter-btn" onclick="filterSlide('w1',3,this)">3대비급여</button>
+    </div>
+
+    <div class="swiper-wrap">
+      <div class="swiper" id="swiper-w1" onscroll="onSwipe('w1')">
+
+        <div class="swiper-slide" data-cat="w1" data-idx="0">
+          <div class="slide-card glass">
+            <div class="slide-header">
+              <div class="icon-wrap" style="background:rgba(168,85,247,.1)"><iconify-icon icon="solar:hospital-bold" style="font-size:15px;color:#c084fc"></iconify-icon></div>
+              <div><div class="cat-title"><span class="term" onclick="showTip(event,'급여')">급여</span> 실손 의료비</div><div style="font-size:10px;color:#71717a;margin-top:1px">국민건강보험 적용 진료</div></div>
+              <div class="cat-count">2항목</div>
+            </div>
+            <div style="padding:8px 18px;background:rgba(234,179,8,.05);border-bottom:1px solid rgba(255,255,255,.05)">
+              <div style="font-size:11px;color:#a16207;display:flex;align-items:flex-start;gap:5px;line-height:1.55"><iconify-icon icon="solar:info-circle-linear" style="font-size:12px;color:#eab308;margin-top:2px;flex-shrink:0"></iconify-icon><span><span class="term" onclick="showTip(event,'자기부담금')">자기부담금</span>: 급여 입원 20% (연간 합산 200만원 초과분은 보상) · 통원 1회당 최소 2만원</span></div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5">상해 급여 의료비</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5">상해로 입원·통원 시 <span class="term" onclick="showTip(event,'급여')">급여</span> 본인부담금 보상. 입원 80%, 통원은 1회당 공제(병·의원 1만 / 상급·종합 2만원과 20% 중 큰 금액) 후 보상. 통원 1회 20만원 한도</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><div style="display:flex;gap:4px;flex-wrap:wrap"><span class="bdg bdg-yellow">1년갱신</span><span class="bdg bdg-blue">5년만기·43세</span><span class="bdg bdg-purple">실손</span></div><span class="amt-lg">5,000만원</span></div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5">질병 급여 의료비</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5">질병으로 입원·통원 시 <span class="term" onclick="showTip(event,'급여')">급여</span> 본인부담금 보상. 입원 80%, 통원은 1회당 공제 후 보상. 통원 1회 20만원 한도</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><div style="display:flex;gap:4px;flex-wrap:wrap"><span class="bdg bdg-yellow">1년갱신</span><span class="bdg bdg-blue">5년만기·43세</span><span class="bdg bdg-purple">실손</span></div><span class="amt-lg">5,000만원</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="swiper-slide" data-cat="w1" data-idx="1">
+          <div class="slide-card glass">
+            <div class="slide-header">
+              <div class="icon-wrap" style="background:rgba(168,85,247,.1)"><iconify-icon icon="solar:hospital-bold" style="font-size:15px;color:#c084fc"></iconify-icon></div>
+              <div><div class="cat-title"><span class="term" onclick="showTip(event,'비급여')">비급여</span> 실손 의료비</div><div style="font-size:10px;color:#71717a;margin-top:1px">건강보험 미적용 진료</div></div>
+              <div class="cat-count">2항목</div>
+            </div>
+            <div style="padding:8px 18px;background:rgba(234,179,8,.05);border-bottom:1px solid rgba(255,255,255,.05)">
+              <div style="font-size:11px;color:#a16207;display:flex;align-items:flex-start;gap:5px;line-height:1.55"><iconify-icon icon="solar:info-circle-linear" style="font-size:12px;color:#eab308;margin-top:2px;flex-shrink:0"></iconify-icon><span>보험료 차등제: 비급여 보험금을 많이 받으면 다음 해 비급여 보험료가 할증될 수 있어요. 현재는 차등 할인(-852원) 적용 중이에요.</span></div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5">상해 비급여 의료비</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5">상해로 입원·통원 시 <span class="term" onclick="showTip(event,'비급여')">비급여</span> 의료비 70% 보상. 상급병실 차액 50%(1일 평균 10만원 한도). 통원은 1회당 3만원과 30% 중 큰 금액 공제, 연 100회</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><div style="display:flex;gap:4px;flex-wrap:wrap"><span class="bdg bdg-yellow">1년갱신</span><span class="bdg bdg-blue">5년만기·43세</span><span class="bdg bdg-purple">실손</span></div><span class="amt-lg">5,000만원</span></div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5">질병 비급여 의료비</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5">질병으로 입원·통원 시 <span class="term" onclick="showTip(event,'비급여')">비급여</span> 의료비 70% 보상. 상급병실 차액 50%(1일 평균 10만원 한도). 통원은 1회당 공제 후 보상, 연 100회</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><div style="display:flex;gap:4px;flex-wrap:wrap"><span class="bdg bdg-yellow">1년갱신</span><span class="bdg bdg-blue">5년만기·43세</span><span class="bdg bdg-purple">실손</span></div><span class="amt-lg">5,000만원</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="swiper-slide" data-cat="w1" data-idx="2">
+          <div class="slide-card glass">
+            <div class="slide-header">
+              <div class="icon-wrap" style="background:rgba(168,85,247,.1)"><iconify-icon icon="solar:hospital-bold" style="font-size:15px;color:#c084fc"></iconify-icon></div>
+              <div><div class="cat-title"><span class="term" onclick="showTip(event,'3대비급여')">3대비급여</span></div><div style="font-size:10px;color:#71717a;margin-top:1px">도수치료 · 주사료 · MRI</div></div>
+              <div class="cat-count">3항목</div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5">도수치료·체외충격파·증식치료</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5">치료 목적 시 실제 부담 비급여 의료비에서 1회당 3만원과 30% 중 큰 금액 공제 후 보상 (연간 50회 한도)</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><div style="display:flex;gap:4px;flex-wrap:wrap"><span class="bdg bdg-yellow">1년갱신</span><span class="bdg bdg-blue">5년만기·43세</span><span class="bdg bdg-purple">실손</span></div><span class="amt-lg">350만원/년</span></div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5">비급여 주사료</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5">치료 목적 비급여 주사 시 공제 후 보상 (연간 50회 한도)</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><div style="display:flex;gap:4px;flex-wrap:wrap"><span class="bdg bdg-yellow">1년갱신</span><span class="bdg bdg-blue">5년만기·43세</span><span class="bdg bdg-purple">실손</span></div><span class="amt-lg">250만원/년</span></div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5">비급여 MRI (자기공명영상)</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5">치료 목적 MRI 촬영 시 공제 후 보상</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><div style="display:flex;gap:4px;flex-wrap:wrap"><span class="bdg bdg-yellow">1년갱신</span><span class="bdg bdg-blue">5년만기·43세</span><span class="bdg bdg-purple">실손</span></div><span class="amt-lg">300만원/년</span></div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /swiper w1 -->
+      <div class="dots mt-2" id="dots-w1">
+        <div class="dot active" onclick="goSlide('w1',0)"></div>
+        <div class="dot" onclick="goSlide('w1',1)"></div>
+        <div class="dot" onclick="goSlide('w1',2)"></div>
+      </div>
+    </div>
+
+  </div><!-- /pane w1 -->
+
+  <!-- ════════════════════ WIFE 2: DB생명 종신 ════════════════════ -->
+  <div id="pane-w2" class="policy-pane fade-up d2">
+
+    <div class="glass" style="border-radius:1rem;padding:16px 18px;margin-bottom:18px">
+      <div style="font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:#52525b;font-weight:700;margin-bottom:12px">기본 정보</div>
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px">
+        <div><div style="font-size:10px;color:#52525b;margin-bottom:2px">증권번호</div><div style="font-size:.82rem;font-weight:600;color:#d4d4d8">100****36</div></div>
+        <div><div style="font-size:10px;color:#52525b;margin-bottom:2px">보험기간</div><div style="font-size:.82rem;font-weight:600;color:#d4d4d8">종신 <span style="font-size:10px;color:#71717a">계약 2011.09.28</span></div></div>
+        <div><div style="font-size:10px;color:#52525b;margin-bottom:2px">납입방법</div><div style="font-size:.82rem;font-weight:600;color:#d4d4d8">20년납 · 월납 · 자동이체 <span style="font-size:10px;color:#71717a">~2031.09</span></div></div>
+        <div><div style="font-size:10px;color:#52525b;margin-bottom:2px">상품</div><div style="font-size:.82rem;font-weight:600;color:#d4d4d8">유니버셜 더블종신 v11 (1종 기본형)</div></div>
+      </div>
+      <div style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,.05);display:flex;gap:16px;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:6px"><div style="width:7px;height:7px;border-radius:2px;background:#4ade80"></div><span style="font-size:11px;color:#71717a">주계약</span><span style="font-size:12px;font-weight:700;color:#4ade80">22,242원</span></div><div style="display:flex;align-items:center;gap:6px"><div style="width:7px;height:7px;border-radius:2px;background:#818cf8"></div><span style="font-size:11px;color:#71717a">특약 합계</span><span style="font-size:12px;font-weight:700;color:#818cf8">68,130원</span></div>
+      </div>
+    </div>
+
+    <div class="filter-bar mb-3" id="filters-w2">
+      <button class="filter-btn active" onclick="filterSlide('w2',0,this)">전체</button>
+      <button class="filter-btn" onclick="filterSlide('w2',1,this)">사망</button>
+      <button class="filter-btn" onclick="filterSlide('w2',2,this)">진단</button>
+      <button class="filter-btn" onclick="filterSlide('w2',3,this)">수술·입원</button>
+      <button class="filter-btn" onclick="filterSlide('w2',4,this)">재해</button>
+    </div>
+
+    <div class="swiper-wrap">
+      <div class="swiper" id="swiper-w2" onscroll="onSwipe('w2')">
+
+        <div class="swiper-slide" data-cat="w2" data-idx="0">
+          <div class="slide-card glass">
+            <div class="slide-header">
+              <div class="icon-wrap" style="background:rgba(34,197,94,.1)"><iconify-icon icon="solar:user-heart-bold" style="font-size:15px;color:#4ade80"></iconify-icon></div>
+              <div><div class="cat-title">사망 보장</div><div style="font-size:10px;color:#71717a;margin-top:1px">주계약 · 정기특약</div></div>
+              <div class="cat-count">2항목</div>
+            </div>
+            <div style="padding:8px 18px;background:rgba(99,102,241,.06);border-bottom:1px solid rgba(255,255,255,.05)">
+              <div style="font-size:11px;color:#a5b4fc;display:flex;align-items:flex-start;gap:5px;line-height:1.55"><iconify-icon icon="solar:info-circle-linear" style="font-size:12px;color:#818cf8;margin-top:2px;flex-shrink:0"></iconify-icon><span>유니버셜 종신: 납입 완료 후에도 해지하지 않으면 종신 보장. 중도인출·추가납입에 따라 사망보험금이 달라질 수 있어요.</span></div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5">사망보험금 (주계약)</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5">사망 시 기본보험금액 + 가산보험금액 지급. <span class="term" onclick="showTip(event,'전환나이')">전환나이</span> 이후 제2보험기간 기본사망보험금은 50%로 바뀌어요</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><span class="bdg bdg-green">종신</span><span style="font-size:1rem;font-weight:800;color:#fbbf24">3,300만원</span></div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5">정기특약 사망보험금</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5">특약 보험기간(20년) 중 사망 시 지급</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><span class="bdg bdg-blue">20년 ~2031.09</span><span class="amt-lg">2,000만원</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="swiper-slide" data-cat="w2" data-idx="1">
+          <div class="slide-card glass">
+            <div class="slide-header">
+              <div class="icon-wrap" style="background:rgba(239,68,68,.1)"><iconify-icon icon="solar:health-bold" style="font-size:15px;color:#f87171"></iconify-icon></div>
+              <div><div class="cat-title">진단 담보</div><div style="font-size:10px;color:#71717a;margin-top:1px"><span class="term" onclick="showTip(event,'전환나이')">전환나이</span> 이후 금액 2배</div></div>
+              <div class="cat-count">4항목</div>
+            </div>
+            <div style="padding:8px 18px;background:rgba(234,179,8,.05);border-bottom:1px solid rgba(255,255,255,.05)">
+              <div style="font-size:11px;color:#a16207;display:flex;align-items:flex-start;gap:5px;line-height:1.55"><iconify-icon icon="solar:info-circle-linear" style="font-size:12px;color:#eab308;margin-top:2px;flex-shrink:0"></iconify-icon><span>뇌출혈·급성심근경색만 보장해요. 뇌경색·협심증 등 넓은 범위는 DB손해 행복플러스의 뇌혈관·허혈심장질환 진단비가 보장해요.</span></div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5">암진단자금 (<span class="term" onclick="showTip(event,'유사암')">유사암</span> 제외)</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5">암 진단 확정 시 최초 1회. 유방암은 보장개시 후 275일 이내 20%, 1~2년 50% 지급. 제2보험기간 5,200만원 <span style="font-size:10px;color:#4ade80;font-weight:600">전환 후 ×2</span></div>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><span class="bdg bdg-blue">특약 ~2065</span><span style="font-size:1rem;font-weight:800;color:#fbbf24">2,600만원</span></div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5">기타피부암·제자리암 진단</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5">각 1회한. 2년 미만 50% 지급. 제2보험기간 520만원 <span style="font-size:10px;color:#4ade80;font-weight:600">전환 후 ×2</span></div>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><span class="bdg bdg-blue">특약 ~2065</span><span class="amt-md">260만원</span></div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5">경계성종양·갑상선암 진단</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5">각 1회한. 2년 미만 50% 지급. 제2보험기간 1,040만원 <span style="font-size:10px;color:#4ade80;font-weight:600">전환 후 ×2</span></div>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><span class="bdg bdg-blue">특약 ~2065</span><span class="amt-md">520만원</span></div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5"><span class="term" onclick="showTip(event,'2대질병')">2대질병</span> 진단자금</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5">뇌출혈 또는 급성심근경색증 진단 시 각 1회한. 제2보험기간 4,000만원 <span style="font-size:10px;color:#4ade80;font-weight:600">전환 후 ×2</span></div>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><span class="bdg bdg-blue">특약 ~2065</span><span class="amt-lg">2,000만원</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="swiper-slide" data-cat="w2" data-idx="2">
+          <div class="slide-card glass">
+            <div class="slide-header">
+              <div class="icon-wrap" style="background:rgba(99,102,241,.12)"><iconify-icon icon="solar:medical-kit-bold" style="font-size:15px;color:#818cf8"></iconify-icon></div>
+              <div><div class="cat-title">수술·입원 담보</div><div style="font-size:10px;color:#71717a;margin-top:1px">질병·재해 공통</div></div>
+              <div class="cat-count">4항목</div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5">1~5종 수술급여금</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5">질병·재해로 <span class="term" onclick="showTip(event,'수술종류')">1~5종 수술</span> 시 1회당 5종/4종/3종/2종/1종 지급. 제2보험기간 2배 <span style="font-size:10px;color:#4ade80;font-weight:600">전환 후 ×2</span></div>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><span class="bdg bdg-blue">특약 ~2065</span><span class="amt-md">500/100/50/30/15만원</span></div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5">입원급여금</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5">질병·재해로 4일 이상 계속 입원 시 3일 초과 1일당 (1회 입원 120일 한도). 제2보험기간 4만원 <span style="font-size:10px;color:#4ade80;font-weight:600">전환 후 ×2</span></div>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><span class="bdg bdg-blue">특약 ~2065</span><span class="amt-md">2만원/일</span></div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5"><span class="term" onclick="showTip(event,'11대질병')">11대질병</span> 수술금</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5">11대질병 치료 목적 수술 시 1회당. 제2보험기간 200만원 <span style="font-size:10px;color:#4ade80;font-weight:600">전환 후 ×2</span></div>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><span class="bdg bdg-blue">특약 ~2065</span><span class="amt-md">100만원</span></div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5"><span class="term" onclick="showTip(event,'11대질병')">11대질병</span> 입원금</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5">11대질병으로 4일 이상 입원 시 3일 초과 1일당 (120일 한도). 제2보험기간 6만원 <span style="font-size:10px;color:#4ade80;font-weight:600">전환 후 ×2</span></div>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><span class="bdg bdg-blue">특약 ~2065</span><span class="amt-md">3만원/일</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="swiper-slide" data-cat="w2" data-idx="3">
+          <div class="slide-card glass">
+            <div class="slide-header">
+              <div class="icon-wrap" style="background:rgba(251,191,36,.12)"><iconify-icon icon="solar:shield-warning-bold" style="font-size:15px;color:#fbbf24"></iconify-icon></div>
+              <div><div class="cat-title">재해 담보</div><div style="font-size:10px;color:#71717a;margin-top:1px">사고·재해 보장</div></div>
+              <div class="cat-count">5항목</div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5">재해장해급여금</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5">재해로 3~100% 장해 시 가입금액 × <span class="term" onclick="showTip(event,'후유장해지급률')">후유장해지급률</span></div>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><span class="bdg bdg-blue">특약 ~2065</span><span class="amt-lg">5,000만원</span></div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5">재해수술급여금</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5">화상 제외 재해로 수술 시 1회당</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><span class="bdg bdg-blue">특약 ~2065</span><span class="amt-md">40만원</span></div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5">골절치료자금 (치아제외)</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5">재해 골절 시 발생 1회당 (복합골절도 1회)</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><span class="bdg bdg-blue">특약 ~2065</span><span class="amt-md">20만원</span></div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5">화상수술급여금</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5">화상으로 수술 시 1회당</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><span class="bdg bdg-blue">특약 ~2065</span><span class="amt-md">80만원</span></div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5">화상입원급여금</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5">화상으로 4일 이상 입원 시 3일 초과 1일당 (120일 한도)</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><span class="bdg bdg-blue">특약 ~2065</span><span class="amt-md">2만원/일</span></div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /swiper w2 -->
+      <div class="dots mt-2" id="dots-w2">
+        <div class="dot active" onclick="goSlide('w2',0)"></div>
+        <div class="dot" onclick="goSlide('w2',1)"></div>
+        <div class="dot" onclick="goSlide('w2',2)"></div>
+        <div class="dot" onclick="goSlide('w2',3)"></div>
+      </div>
+    </div>
+
+  </div><!-- /pane w2 -->
+
+  <!-- ════════════════════ WIFE 3: DB손해 행복플러스 ════════════════════ -->
+  <div id="pane-w3" class="policy-pane fade-up d2">
+
+    <div class="glass" style="border-radius:1rem;padding:16px 18px;margin-bottom:18px">
+      <div style="font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:#52525b;font-weight:700;margin-bottom:12px">기본 정보</div>
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px">
+        <div><div style="font-size:10px;color:#52525b;margin-bottom:2px">증권번호</div><div style="font-size:.82rem;font-weight:600;color:#d4d4d8">32026****097</div></div>
+        <div><div style="font-size:10px;color:#52525b;margin-bottom:2px">보험기간</div><div style="font-size:.82rem;font-weight:600;color:#d4d4d8">90세만기 <span style="font-size:10px;color:#71717a">~2075.03.31</span></div></div>
+        <div><div style="font-size:10px;color:#52525b;margin-bottom:2px">납입방법</div><div style="font-size:.82rem;font-weight:600;color:#d4d4d8">20년납 · 월납 · 방문수금</div></div>
+        <div><div style="font-size:10px;color:#52525b;margin-bottom:2px">발행구분</div><div style="font-size:.82rem;font-weight:600;color:#d4d4d8">신규 <span style="font-size:10px;color:#71717a">2026.03.31</span></div></div>
+      </div>
+      <div style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,.05);display:flex;gap:16px;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:6px"><div style="width:7px;height:7px;border-radius:2px;background:#818cf8"></div><span style="font-size:11px;color:#71717a">월 보험료 (전액 보장)</span><span style="font-size:12px;font-weight:700;color:#818cf8">72,696원</span></div><div style="display:flex;align-items:center;gap:6px"><div style="width:7px;height:7px;border-radius:2px;background:#a1a1aa"></div><span style="font-size:11px;color:#71717a">플랜</span><span style="font-size:12px;font-weight:700;color:#a1a1aa">건강고지8년 · <span class="term" onclick="showTip(event,'무해지')">무해지</span></span></div>
+      </div>
+    </div>
+
+    <div class="filter-bar mb-3" id="filters-w3">
+      <button class="filter-btn active" onclick="filterSlide('w3',0,this)">전체</button>
+      <button class="filter-btn" onclick="filterSlide('w3',1,this)">기본상해</button>
+      <button class="filter-btn" onclick="filterSlide('w3',2,this)">암</button>
+      <button class="filter-btn" onclick="filterSlide('w3',3,this)">심·뇌혈관</button>
+      <button class="filter-btn" onclick="filterSlide('w3',4,this)">질병수술·기타</button>
+      <button class="filter-btn" onclick="filterSlide('w3',5,this)">납입면제</button>
+    </div>
+
+    <div class="swiper-wrap">
+      <div class="swiper" id="swiper-w3" onscroll="onSwipe('w3')">
+
+        <div class="swiper-slide" data-cat="w3" data-idx="0">
+          <div class="slide-card glass">
+            <div class="slide-header">
+              <div class="icon-wrap" style="background:rgba(251,191,36,.12)"><iconify-icon icon="solar:shield-warning-bold" style="font-size:15px;color:#fbbf24"></iconify-icon></div>
+              <div><div class="cat-title">기본 상해 담보</div><div style="font-size:10px;color:#71717a;margin-top:1px">상해·사고 보장</div></div>
+              <div class="cat-count">4항목</div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5">상해사망·<span class="term" onclick="showTip(event,'후유장해')">후유장해</span> (20~100%)</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5">상해 사망 시 가입금액, 20~100% 후유장해 시 가입금액 × <span class="term" onclick="showTip(event,'후유장해지급률')">후유장해지급률</span></div>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><span class="bdg bdg-green">90세만기</span><span class="amt-md">100만원</span></div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5">상해 1~5종 수술비</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5">상해로 <span class="term" onclick="showTip(event,'수술종류')">1~5종 수술</span> 시 해당 종 가입금액 지급 (동일사고당 1회, 가장 높은 종 기준)</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><span class="bdg bdg-green">90세만기</span><span class="amt-md">500/300/100/30/20만원</span></div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5"><span class="term" onclick="showTip(event,'5대골절')">5대골절</span> 진단비</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5">상해로 5대골절 진단 확정 시 (1사고당)</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><span class="bdg bdg-green">90세만기</span><span class="amt-md">100만원</span></div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5">골절진단비 (치아제외)</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5">상해로 골절 진단 시 1사고당 (치아파절 제외)</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><span class="bdg bdg-green">90세만기</span><span class="amt-md">30만원</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="swiper-slide" data-cat="w3" data-idx="1">
+          <div class="slide-card glass">
+            <div class="slide-header">
+              <div class="icon-wrap" style="background:rgba(239,68,68,.1)"><iconify-icon icon="solar:health-bold" style="font-size:15px;color:#f87171"></iconify-icon></div>
+              <div><div class="cat-title">암 담보</div><div style="font-size:10px;color:#71717a;margin-top:1px">진단 · 전이 · 치료</div></div>
+              <div class="cat-count">11항목</div>
+            </div>
+            <div style="padding:8px 18px;background:rgba(234,179,8,.05);border-bottom:1px solid rgba(255,255,255,.05)">
+              <div style="font-size:11px;color:#a16207;display:flex;align-items:flex-start;gap:5px;line-height:1.55"><iconify-icon icon="solar:info-circle-linear" style="font-size:12px;color:#eab308;margin-top:2px;flex-shrink:0"></iconify-icon><span>암진단비는 100만원으로 작아요. 대신 DB생명 종신의 암진단자금 2,600만원이 진단 시 목돈 역할을 해요.</span></div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5">암진단비 (<span class="term" onclick="showTip(event,'유사암')">유사암</span> 제외)</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5"><span class="term" onclick="showTip(event,'보장개시일')">보장개시일</span>(계약 후 90일) 이후 암 진단 시 최초 1회</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><span class="bdg bdg-green">90세만기</span><span class="amt-md">100만원</span></div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5">통합 <span class="term" onclick="showTip(event,'유사암')">유사암</span> 진단비</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5">제자리암·경계성종양·기타피부암·갑상선암 각 1회. 1년 미만 50%</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><span class="bdg bdg-green">90세만기</span><span class="amt-md">20만원</span></div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5">통합 <span class="term" onclick="showTip(event,'전이암')">전이암</span> 진단비 (8개 부위)</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5">여성생식기 · 흉곽내기관·연조직 · 유방·비뇨기·내분비 · 위·식도 · 간·담낭·췌장 · 뇌·중추신경 · 골·피부 등 · 소장·대장·항문 전이암 각각 최초 1회</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><span class="bdg bdg-green">90세만기</span><span class="amt-lg">부위별 500만원</span></div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5">항암 <span class="term" onclick="showTip(event,'중입자방사선')">중입자방사선</span> 치료비</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5">암 직접치료 목적 중입자방사선치료 시 최초 1회</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><span class="bdg bdg-green">90세만기</span><span style="font-size:1rem;font-weight:800;color:#fbbf24">5,000만원</span></div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5">비급여 <span class="term" onclick="showTip(event,'표적항암')">표적항암</span>약물 치료비</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5">비급여표적항암약물치료 시 최초 1회 (6개월 미만 25%, 1년 미만 50%)</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><span class="bdg bdg-green">90세만기</span><span style="font-size:1rem;font-weight:800;color:#fbbf24">5,000만원</span></div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5">특정항암호르몬약물 치료비</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5">암(유사암 제외) 특정항암호르몬약물 허가치료 시 연간 1회</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><span class="bdg bdg-green">90세만기</span><span class="amt-md">300만원</span></div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5">갑상선암 호르몬약물 치료비</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5">갑상선암 호르몬약물 허가치료 시 최초 1회</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><span class="bdg bdg-green">90세만기</span><span class="amt-md">100만원</span></div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5">항암방사선·약물치료비 (<span class="term" onclick="showTip(event,'유사암')">유사암</span> 포함)</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5">암 항암방사선·약물치료 시 최초 1회. 유사암은 20% 지급</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><span class="bdg bdg-green">90세만기</span><span class="amt-md">100만원</span></div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5">암 주요치료비 (<span class="term" onclick="showTip(event,'상급종합병원')">상급종합병원</span>플러스)</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5">암(유사암 제외) 주요치료(수술·방사선·약물) 시 연간 1회, 최대 10년</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><span class="bdg bdg-green">90세만기</span><span class="amt-lg">1,000만원/년</span></div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5">기타피부암·갑상선암 주요치료비</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5"><span class="term" onclick="showTip(event,'상급종합병원')">상급종합병원</span>플러스에서 주요치료 시 연간 1회, 최대 10년</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><span class="bdg bdg-green">90세만기</span><span class="amt-md">200만원/년</span></div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5"><span class="term" onclick="showTip(event,'비급여암주요치료')">비급여 암주요치료비</span></div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5">다빈치로봇수술 1천만원 · 양성자방사선/표적항암/면역항암 각 3천만원 등 항목별 지급 (연간 한도)</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><span class="bdg bdg-green">90세만기</span><span style="font-size:1rem;font-weight:800;color:#fbbf24">8,000만원/년</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="swiper-slide" data-cat="w3" data-idx="2">
+          <div class="slide-card glass">
+            <div class="slide-header">
+              <div class="icon-wrap" style="background:rgba(244,114,182,.1)"><iconify-icon icon="solar:heart-pulse-bold" style="font-size:15px;color:#f472b6"></iconify-icon></div>
+              <div><div class="cat-title">심·뇌혈관 담보</div><div style="font-size:10px;color:#71717a;margin-top:1px">뇌·심장 관련 보장</div></div>
+              <div class="cat-count">3항목</div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5"><span class="term" onclick="showTip(event,'뇌혈관질환')">뇌혈관질환</span> 진단비</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5">뇌혈관질환 진단 확정 시 1회한</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><span class="bdg bdg-green">90세만기</span><span class="amt-lg">1,000만원</span></div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5"><span class="term" onclick="showTip(event,'허혈심장질환')">허혈심장질환</span> 진단비</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5">허혈심장질환 진단 확정 시 1회한</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><span class="bdg bdg-green">90세만기</span><span class="amt-lg">1,000만원</span></div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5"><span class="term" onclick="showTip(event,'순환계질환')">순환계질환</span>(3~5종) 주요치료비</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5">수술 시(매회) · 종합병원 중환자실 입원 시(연 1회) · 혈전용해치료 시 뇌혈관/심혈관 각각(연 1회)</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><span class="bdg bdg-green">90세만기</span><span class="amt-lg">항목당 1,000만원</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="swiper-slide" data-cat="w3" data-idx="3">
+          <div class="slide-card glass">
+            <div class="slide-header">
+              <div class="icon-wrap" style="background:rgba(99,102,241,.12)"><iconify-icon icon="solar:medical-kit-bold" style="font-size:15px;color:#818cf8"></iconify-icon></div>
+              <div><div class="cat-title">질병 수술·기타 담보</div><div style="font-size:10px;color:#71717a;margin-top:1px">중증질환·이식수술 보장</div></div>
+              <div class="cat-count">5항목</div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5">질병 1~5종 수술비</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5">질병 치료 목적 <span class="term" onclick="showTip(event,'수술종류')">1~5종 수술</span> 시 해당 종 가입금액 (동일질병당 1회, 가장 높은 종 기준)</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><span class="bdg bdg-green">90세만기</span><span class="amt-md">500/500/100/30/20만원</span></div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5">양성뇌종양 진단비</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5">양성뇌종양 진단 확정 시</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><span class="bdg bdg-green">90세만기</span><span class="amt-md">500만원</span></div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5"><span class="term" onclick="showTip(event,'5대장기')">5대장기</span> 이식수술비</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5">5대장기 이식수술 시 최초 1회</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><span class="bdg bdg-blue">80세만기</span><span class="amt-lg">2,000만원</span></div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5">각막 이식수술비</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5">각막이식수술 시 최초 1회</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><span class="bdg bdg-blue">80세만기</span><span class="amt-lg">2,000만원</span></div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5"><span class="term" onclick="showTip(event,'조혈모세포')">조혈모세포</span> 이식수술비</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5">조혈모세포 이식수술 시 최초 1회</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><span class="bdg bdg-blue">80세만기</span><span class="amt-lg">1,000만원</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="swiper-slide" data-cat="w3" data-idx="4">
+          <div class="slide-card glass">
+            <div class="slide-header">
+              <div class="icon-wrap" style="background:rgba(34,197,94,.1)"><iconify-icon icon="solar:wallet-money-bold" style="font-size:15px;color:#4ade80"></iconify-icon></div>
+              <div><div class="cat-title"><span class="term" onclick="showTip(event,'납입면제')">납입면제</span>·납입지원</div><div style="font-size:10px;color:#71717a;margin-top:1px">보험료 부담 덜어주는 담보</div></div>
+              <div class="cat-count">2항목</div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5">보험료 납입면제 (10대 사유)</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5">암(유사암 제외)·뇌졸중·급성심근경색·말기간경화·말기신부전·말기폐질환·80% 이상 후유장해 등 진단 시 이후 보험료 면제</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><span class="bdg bdg-blue">20년만기</span><span class="amt-md">10만원</span></div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5">보험료 납입지원 (<span class="term" onclick="showTip(event,'유사암')">유사암</span> 진단)</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5">유사암 진단 시 1회, 남은 납입기간 동안 매년 (해당 개월수 × 가입금액) 지급</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><span class="bdg bdg-blue">20년만기</span><span class="amt-md">월 36,347원</span></div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /swiper w3 -->
+      <div class="dots mt-2" id="dots-w3">
+        <div class="dot active" onclick="goSlide('w3',0)"></div>
+        <div class="dot" onclick="goSlide('w3',1)"></div>
+        <div class="dot" onclick="goSlide('w3',2)"></div>
+        <div class="dot" onclick="goSlide('w3',3)"></div>
+        <div class="dot" onclick="goSlide('w3',4)"></div>
+      </div>
+    </div>
+
+  </div><!-- /pane w3 -->
+
 
   <div class="glass fade-up d3" style="border-radius:1rem;padding:14px 16px;margin-top:20px">
     <div style="font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:#52525b;font-weight:700;margin-bottom:9px">범례</div>
@@ -758,7 +1282,7 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
 
   <div style="margin-top:24px;text-align:center;font-size:10.5px;color:#3f3f46;line-height:1.9">
     본 페이지는 보험증권 요약본입니다. 정확한 보장 내용은 약관을 참고하세요.<br>
-    DB손해보험 고객센터 1588-0100 · www.idbins.com
+    DB손해보험 1588-0100 · www.idbins.com · 삼성화재 다이렉트 1577-3339
   </div>
 </div>
 
@@ -797,6 +1321,12 @@ const G = {
   '슬관절':'무릎 관절(슬개골)을 말합니다. 소형견에게 자주 발생하는 슬개골 탈구는 기본 의료비로 보장하지 않으며, 이 확장 특약에서 별도로 보장합니다. 보장개시일은 가입 후 1년입니다.',
   '치과구강':'치과질환(치석제거·치아부정교합 포함) 및 구강질환입니다. 반려동물 치과 치료는 고가이며 별도 확장 특약으로 보장됩니다.',
   'MRICT':'자기공명영상(MRI)과 컴퓨터단층촬영(CT)입니다. 반려동물 정밀 검사에 사용되며 1회 수십만원에서 100만원 이상 소요됩니다. 연간 1회 한도로 보장됩니다.',
+  '3대비급여':'실손보험에서 별도 특약으로 떼어 낸 비급여 항목입니다. ① 도수치료·체외충격파·증식치료 ② 비급여 주사료 ③ 비급여 MRI가 해당하며, 항목마다 연간 한도와 횟수 제한이 있습니다.',
+  '전환나이':'유니버셜 더블종신보험에서 보장 구조가 바뀌는 나이입니다. 그 전은 제1보험기간, 이후는 제2보험기간이며 이 상품은 제2보험기간에 진단·수술·입원 특약 금액이 2배가 되고, 주계약 기본사망보험금은 50%가 됩니다. 정확한 전환나이는 증권·약관에서 확인하세요.',
+  '2대질병':'뇌출혈과 급성심근경색증 두 가지입니다. 뇌경색·협심증은 포함되지 않아 범위가 좁습니다.',
+  '11대질병':'뇌혈관질환·특정심장질환·신부전·간질환(간암 제외)·결핵·폐렴·고혈압질환·당뇨병·특정만성하기도질환·갑상선장애·위십이지장궤양입니다.',
+  '전이암':'처음 생긴 암이 다른 부위로 퍼진 암입니다. 이 담보는 전이된 부위별로 각각 최초 1회씩 진단비를 지급합니다.',
+  '무해지':'보험료 납입기간 중 해지하면 해약환급금이 없는 대신 보험료가 저렴한 형태입니다. 이 계약은 납입 완료 후 해지 시 표준형 환급금의 50%를 돌려받습니다.',
   '백내장녹내장':'눈 관련 질환입니다. 백내장은 수정체가 혼탁해지는 질환, 녹내장은 안압 상승으로 시신경이 손상되는 질환입니다. 포메라니안 등 소형견에서 발생 가능성이 있습니다.',
   '이물제거':'반려동물이 이물질을 삼켰을 때 내시경으로 제거하거나 구토유도약물로 처치하는 방법입니다. 내시경 제거는 가입금액의 100%, 구토유도약물은 10% 한도 내 보상됩니다.',
   '특정약물':'인슐린·항암제 등 반려동물 치료에 쓰이는 특정 고가 약물입니다. 약관에서 정한 범위 내 약물치료비를 연간 6회 한도로 보상합니다.',
@@ -884,9 +1414,32 @@ function switchPolicy(id) {
 }
 
 // ──────────────────────────────────────────
+// Person switch (배○○ / 장○○)
+// ──────────────────────────────────────────
+const PEOPLE = {
+  me:   { first: 'p1', co: 'DB손해보험 · KB손해보험', sub: '배○○님의 보험 현황',
+          sum: '총 3개 증권 · 월 납입 보험료 <span style="color:#fbbf24;font-weight:700">236,130원</span> · 발급일 2026.03.31' },
+  wife: { first: 'w1', co: '삼성화재 · DB생명 · DB손해보험', sub: '장○○님의 보험 현황',
+          sum: '총 3개 증권 · 월 납입 보험료 <span style="color:#fbbf24;font-weight:700">180,157원</span> · 실손은 할인 후 금액' },
+};
+function switchPerson(who) {
+  const p = PEOPLE[who];
+  if (!p) return;
+  Object.keys(PEOPLE).forEach(k => {
+    document.getElementById('tabs-' + k).hidden = k !== who;
+    document.getElementById('person-' + k).classList.toggle('active', k === who);
+  });
+  document.getElementById('hdr-co').textContent = p.co;
+  document.getElementById('hdr-sub').textContent = p.sub;
+  document.getElementById('hdr-sum').innerHTML = p.sum;
+  switchPolicy(p.first);
+  try { localStorage.setItem('ins_person', who); } catch (e) {}
+}
+
+// ──────────────────────────────────────────
 // Swiper — filter & navigation
 // ──────────────────────────────────────────
-const swiperState = { p1: 0, p2: 0, p3: 0 };
+const swiperState = { p1: 0, p2: 0, p3: 0, w1: 0, w2: 0, w3: 0 };
 
 function goSlide(pid, idx) {
   const sw = document.getElementById('swiper-' + pid);
@@ -976,10 +1529,13 @@ function updateDots(pid, activeIdx) {
 // Init
 // ──────────────────────────────────────────
 // 초기 전체 모드 적용
-['p1','p2','p3'].forEach(pid => {
+['p1','p2','p3','w1','w2','w3'].forEach(pid => {
   document.getElementById('swiper-' + pid).classList.add('all-mode');
   document.getElementById('dots-' + pid).style.display = 'none';
 });
+
+// 마지막으로 본 사람 복원
+try { const lp = localStorage.getItem('ins_person'); if (lp && lp !== 'me' && PEOPLE[lp]) switchPerson(lp); } catch (e) {}
 
 // switchPolicy 탭 전환 시에도 전체 모드 + 전체 버튼 활성화 유지
 // IntersectionObserver for fade

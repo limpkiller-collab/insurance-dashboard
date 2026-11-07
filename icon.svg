@@ -1,28 +1,16 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
   <title>우리 가족 보험 현황 아이콘</title>
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#1c1c22"/>
-      <stop offset="1" stop-color="#0d0d10"/>
-    </linearGradient>
     <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0" stop-color="#fcd34d"/>
-      <stop offset="0.55" stop-color="#fbbf24"/>
+      <stop offset="0.5" stop-color="#fbbf24"/>
       <stop offset="1" stop-color="#f59e0b"/>
     </linearGradient>
-    <radialGradient id="glow" cx="0.5" cy="0.42" r="0.5">
-      <stop offset="0" stop-color="#fbbf24" stop-opacity="0.22"/>
-      <stop offset="1" stop-color="#fbbf24" stop-opacity="0"/>
-    </radialGradient>
   </defs>
-  <!-- 불투명 정사각 배경 (iOS가 모서리를 자체 마스킹) -->
-  <rect width="1024" height="1024" fill="url(#bg)"/>
-  <circle cx="512" cy="470" r="420" fill="url(#glow)"/>
-  <!-- 방패: 마스커블 안전영역(중앙 80%) 안 -->
-  <path d="M512 200 C 600 250 690 272 776 276 C 788 276 798 286 798 298 L 798 500 C 798 676 676 790 522 846 C 515 849 509 849 502 846 C 348 790 226 676 226 500 L 226 298 C 226 286 236 276 248 276 C 334 272 424 250 512 200 Z" fill="url(#gold)"/>
-  <!-- 하트 두 개 겹침 = 두 사람 -->
-  <g fill="#0d0d10">
-    <path d="M436 420 C 436 384 464 360 494 360 C 512 360 527 369 536 383 C 545 369 560 360 578 360 C 608 360 636 384 636 420 C 636 480 576 528 536 556 C 496 528 436 480 436 420 Z" transform="translate(-58 34) scale(1)" opacity="0.55"/>
-    <path d="M436 420 C 436 384 464 360 494 360 C 512 360 527 369 536 383 C 545 369 560 360 578 360 C 608 360 636 384 636 420 C 636 480 576 528 536 556 C 496 528 436 480 436 420 Z" transform="translate(14 64)"/>
-  </g>
+  <!-- 금색 그라데이션이 정사각 전체를 채움 (헤더 로고와 같은 모양) -->
+  <rect width="1024" height="1024" fill="url(#gold)"/>
+  <!-- 어두운 방패: 마스커블 안전영역(중앙 80%) 안 -->
+  <path d="M512 214 C 592 258 674 280 754 284 C 768 285 778 296 778 310 L 778 500 C 778 664 666 770 524 822 C 516 825 508 825 500 822 C 358 770 246 664 246 500 L 246 310 C 246 296 256 285 270 284 C 350 280 432 258 512 214 Z" fill="#0d0d10"/>
+  <!-- 금색 체크 -->
+  <path d="M408 516 L 486 592 L 628 444" fill="none" stroke="#fbbf24" stroke-width="58" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>

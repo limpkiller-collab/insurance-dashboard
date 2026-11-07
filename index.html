@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>내 보험 현황 v3 · 배○○</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.min.css">
+<script src="https://code.iconify.design/iconify-icon/2.3.0/iconify-icon.min.js"></script>
+<script>tailwind.config={theme:{extend:{fontFamily:{sans:['Pretendard','system-ui','sans-serif']}}}}</script>
+<style>
+*{word-break:keep-all;box-sizing:border-box}
+body{font-family:'Pretendard',system-ui,sans-serif;background:#0d0d10;color:#e4e4e7;margin:0}
+
+/* ── Noise overlay ── */
+body::after{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");pointer-events:none;z-index:99;opacity:.5}
+
+/* ── Animations ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(1.2rem)}to{opacity:1;transform:translateY(0)}}
+.fade-up{animation:fadeUp .55s cubic-bezier(.16,1,.3,1) both}
+.d1{animation-delay:.08s}.d2{animation-delay:.16s}.d3{animation-delay:.24s}.d4{animation-delay:.32s}
+
+/* ── Glass card ── */
+.glass{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 4px 24px rgba(0,0,0,.35);backdrop-filter:blur(12px)}
+
+/* ── Policy tabs ── */
+.policy-tab{transition:all .4s cubic-bezier(.16,1,.3,1);cursor:pointer;text-align:left;border-radius:1rem}
+.policy-tab.active{background:rgba(251,191,36,.1)!important;border-color:rgba(251,191,36,.4)!important}
+.policy-pane{display:none}.policy-pane.active{display:block}
+
+/* ── Category filter bar ── */
+.filter-bar{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
+.filter-bar::-webkit-scrollbar{display:none}
+.filter-btn{flex-shrink:0;padding:6px 14px;border-radius:100px;font-size:12px;font-weight:600;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:#71717a;cursor:pointer;transition:all .3s cubic-bezier(.16,1,.3,1);white-space:nowrap}
+.filter-btn:hover{border-color:rgba(255,255,255,.2);color:#a1a1aa}
+.filter-btn.active{background:rgba(251,191,36,.12);border-color:rgba(251,191,36,.45);color:#fbbf24}
+.filter-btn.active.blue{background:rgba(99,102,241,.12);border-color:rgba(99,102,241,.4);color:#818cf8}
+.filter-btn.active.green{background:rgba(34,197,94,.1);border-color:rgba(34,197,94,.35);color:#4ade80}
+.filter-btn.active.red{background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.3);color:#f87171}
+.filter-btn.active.purple{background:rgba(168,85,247,.1);border-color:rgba(168,85,247,.3);color:#c084fc}
+
+/* ── Swiper ── */
+.swiper-wrap{position:relative}
+.swiper{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:12px;padding:2px 2px 12px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.swiper::-webkit-scrollbar{display:none}
+.swiper-slide{flex:0 0 100%;scroll-snap-align:start;min-width:0}
+
+/* Slide card */
+.slide-card{border-radius:1rem;overflow:hidden;transition:all .4s cubic-bezier(.16,1,.3,1)}
+.swiper-slide.hidden-slide{display:none}
+
+/* Swiper all-mode: 전체 선택 시 세로 스택 */
+.swiper.all-mode{flex-direction:column;overflow-x:visible;overflow-y:visible;scroll-snap-type:none;gap:10px}
+.swiper.all-mode .swiper-slide{flex:none;width:100%}
+.dots{display:flex;gap:6px;justify-content:center;margin-top:4px}
+.dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.15);transition:all .3s;cursor:pointer}
+.dot.active{width:18px;border-radius:3px;background:#fbbf24}
+.dot.active.blue{background:#818cf8}
+
+/* ── Coverage rows ── */
+.cov-row{border-bottom:1px solid rgba(255,255,255,.05);padding:12px 18px;transition:background .25s}
+.cov-row:last-child{border-bottom:none}
+.cov-row:hover{background:rgba(255,255,255,.025)}
+
+/* ── Slide header ── */
+.slide-header{padding:14px 18px 10px;border-bottom:1px solid rgba(255,255,255,.06);display:flex;align-items:center;gap:10px}
+.slide-header .icon-wrap{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.slide-header .cat-title{font-size:13px;font-weight:700;color:#f4f4f5}
+.slide-header .cat-count{font-size:11px;color:#52525b;margin-left:auto}
+
+/* ── Badges ── */
+.bdg{display:inline-block;font-size:10px;padding:2px 7px;border-radius:4px;font-weight:500}
+.bdg-green{background:rgba(34,197,94,.1);color:#4ade80;border:1px solid rgba(34,197,94,.2)}
+.bdg-yellow{background:rgba(234,179,8,.12);color:#eab308;border:1px solid rgba(234,179,8,.25)}
+.bdg-blue{background:rgba(59,130,246,.1);color:#93c5fd;border:1px solid rgba(59,130,246,.2)}
+.bdg-red{background:rgba(239,68,68,.1);color:#fca5a5;border:1px solid rgba(239,68,68,.2)}
+.bdg-purple{background:rgba(168,85,247,.1);color:#d8b4fe;border:1px solid rgba(168,85,247,.2)}
+
+/* ── Amounts ── */
+.amt-lg{font-size:1rem;font-weight:700;color:#f9fafb}
+.amt-md{font-size:.9rem;font-weight:600;color:#d4d4d8}
+.amt-xl{font-size:1.1rem;font-weight:800;color:#4ade80}
+.amt-blue{font-size:1rem;font-weight:700;color:#93c5fd}
+
+/* ── Section divider ── */
+.sec-div{display:flex;align-items:center;gap:8px;padding:10px 18px 6px}
+.sec-div span{font-size:.65rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#52525b;white-space:nowrap}
+.sec-div::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.05)}
+
+/* ── Tooltip ── */
+.tt{position:fixed;z-index:9999;max-width:272px;min-width:200px;background:#18181f;border:1px solid rgba(251,191,36,.3);border-radius:10px;padding:11px 13px;font-size:12.5px;line-height:1.65;color:#d4d4d8;box-shadow:0 12px 40px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.04);pointer-events:none;opacity:0;transform:translateY(4px) scale(.97);transition:opacity .18s,transform .18s}
+.tt.show{opacity:1;transform:translateY(0) scale(1)}
+.tt-title{font-size:12px;font-weight:700;color:#fbbf24;margin-bottom:5px;display:flex;align-items:center;gap:5px}
+.tt-title::before{content:'';width:5px;height:5px;border-radius:50%;background:#fbbf24;flex-shrink:0}
+
+/* ── Term ── */
+.term{border-bottom:1px dashed rgba(251,191,36,.5);cursor:pointer;color:#fbbf24;font-weight:500;transition:color .15s}
+.term:hover{color:#fcd34d}
+
+/* Scrollbar global */
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:#0d0d10}
+::-webkit-scrollbar-thumb{background:#27272a;border-radius:3px}
+
+/* Ambient */
+.ambient{position:fixed;inset:0;pointer-events:none;z-index:0}
+</style>
+</head>
+<body class="min-h-[100dvh]">
+
+<!-- Ambient blobs -->
+<div class="ambient">
+  <div style="position:absolute;top:-15%;left:-5%;width:55%;height:55%;background:radial-gradient(ellipse,rgba(251,191,36,.035) 0%,transparent 68%)"></div>
+  <div style="position:absolute;bottom:-15%;right:-5%;width:45%;height:45%;background:radial-gradient(ellipse,rgba(99,102,241,.04) 0%,transparent 68%)"></div>
+</div>
+
+<!-- Tooltip -->
+<div class="tt" id="tt"></div>
+
+<div class="relative z-10 max-w-3xl mx-auto px-4 sm:px-6 py-10 pb-20">
+
+  <!-- ── Header ── -->
+  <header class="fade-up mb-9">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px">
+      <div style="width:34px;height:34px;background:linear-gradient(135deg,#fbbf24,#f59e0b);border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        <iconify-icon icon="solar:shield-check-bold" style="font-size:17px;color:#0d0d10"></iconify-icon>
+      </div>
+      <div>
+        <div style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#52525b;font-weight:700">DB손해보험 · KB손해보험</div>
+        <div style="font-size:12px;color:#71717a;margin-top:1px">배○○님의 보험 현황</div>
+      </div>
+    </div>
+    <h1 style="font-size:clamp(1.6rem,5vw,2.4rem);font-weight:800;letter-spacing:-.025em;line-height:1.15;color:#fafafa;margin-bottom:6px">가입 보험 한눈에 보기</h1>
+    <p style="color:#52525b;font-size:.9rem;line-height:1.7">총 3개 증권 · 월 납입 보험료 <span style="color:#fbbf24;font-weight:700">236,130원</span> · 발급일 2026.03.31</p>
+  </header>
+
+  <!-- ── Policy tabs ── -->
+  <div class="fade-up d1" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:24px">
+    <button onclick="switchPolicy('p1')" id="tab-p1" class="policy-tab glass active" style="padding:14px 18px;flex:1;min-width:190px">
+      <div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#71717a;margin-bottom:4px">실손 · 건강</div>
+      <div style="font-weight:700;font-size:.9rem;color:#fafafa;line-height:1.35">다이렉트건강플러스보험<br>1206</div>
+      <div style="margin-top:7px;display:flex;align-items:baseline;gap:4px">
+        <span style="font-size:1.05rem;font-weight:800;color:#fbbf24">37,476원</span>
+        <span style="font-size:11px;color:#52525b">/월</span>
+      </div>
+    </button>
+    <button onclick="switchPolicy('p2')" id="tab-p2" class="policy-tab glass" style="padding:14px 18px;flex:1;min-width:190px">
+      <div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#71717a;margin-bottom:4px">종합 · 암·심뇌혈관</div>
+      <div style="font-weight:700;font-size:.9rem;color:#fafafa;line-height:1.35">청춘어람플러스<br>종합보험2601</div>
+      <div style="margin-top:7px;display:flex;align-items:baseline;gap:4px">
+        <span style="font-size:1.05rem;font-weight:800;color:#818cf8">119,927원</span>
+        <span style="font-size:11px;color:#52525b">/월</span>
+      </div>
+    </button>
+    <button onclick="switchPolicy('p3')" id="tab-p3" class="policy-tab glass" style="padding:14px 18px;flex:1;min-width:190px">
+      <div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#71717a;margin-bottom:4px">펫보험 · 까망 🐾</div>
+      <div style="font-weight:700;font-size:.9rem;color:#fafafa;line-height:1.35">금쪽같은 펫보험<br>(강아지) 25.01</div>
+      <div style="margin-top:7px;display:flex;align-items:baseline;gap:4px">
+        <span style="font-size:1.05rem;font-weight:800;color:#4ade80">78,727원</span>
+        <span style="font-size:11px;color:#52525b">/월</span>
+      </div>
+    </button>
+  </div>
+
+  <!-- ════════════════════ POLICY 1 ════════════════════ -->
+  <div id="pane-p1" class="policy-pane active fade-up d2">
+
+    <!-- Info card -->
+    <div class="glass" style="border-radius:1rem;padding:16px 18px;margin-bottom:18px">
+      <div style="font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:#52525b;font-weight:700;margin-bottom:12px">기본 정보</div>
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px">
+        <div><div style="font-size:10px;color:#52525b;margin-bottom:2px">증권번호</div><div style="font-size:.82rem;font-weight:600;color:#d4d4d8">96612****819</div></div>
+        <div><div style="font-size:10px;color:#52525b;margin-bottom:2px">보험기간</div><div style="font-size:.82rem;font-weight:600;color:#d4d4d8">110세만기 <span style="font-size:10px;color:#71717a">~2097.06.26</span></div></div>
+        <div><div style="font-size:10px;color:#52525b;margin-bottom:2px">납입방법</div><div style="font-size:.82rem;font-weight:600;color:#d4d4d8">30년납 · 월납 · 신용카드</div></div>
+        <div><div style="font-size:10px;color:#52525b;margin-bottom:2px">판매플랜</div><div style="font-size:.82rem;font-weight:600;color:#d4d4d8">건강플러스통합플랜</div></div>
+      </div>
+      <div style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,.05);display:flex;gap:16px;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:6px"><div style="width:7px;height:7px;border-radius:2px;background:#fbbf24"></div><span style="font-size:11px;color:#71717a">보장보험료</span><span style="font-size:12px;font-weight:700;color:#fbbf24">6,570원</span></div>
+        <div style="display:flex;align-items:center;gap:6px"><div style="width:7px;height:7px;border-radius:2px;background:#6366f1"></div><span style="font-size:11px;color:#71717a">적립보험료</span><span style="font-size:12px;font-weight:700;color:#818cf8">30,906원</span></div>
+      </div>
+    </div>
+
+    <!-- Filter bar p1 -->
+    <div class="filter-bar mb-3" id="filters-p1">
+      <button class="filter-btn active" onclick="filterSlide('p1',0,this)">전체</button>
+      <button class="filter-btn" onclick="filterSlide('p1',1,this)">상해</button>
+      <button class="filter-btn" onclick="filterSlide('p1',2,this)">질병</button>
+      <button class="filter-btn" onclick="filterSlide('p1',3,this)">수술·기타</button>
+      <button class="filter-btn" onclick="filterSlide('p1',4,this)">실손의료비</button>
+    </div>
+
+    <!-- Swiper p1 -->
+    <div class="swiper-wrap">
+      <div class="swiper" id="swiper-p1" onscroll="onSwipe('p1')">
+
+        <!-- Slide 1: 상해 -->
+        <div class="swiper-slide" data-cat="p1" data-idx="0">
+          <div class="slide-card glass">
+            <div class="slide-header">
+              <div class="icon-wrap" style="background:rgba(251,191,36,.12)"><iconify-icon icon="solar:shield-warning-bold" style="font-size:15px;color:#fbbf24"></iconify-icon></div>
+              <div><div class="cat-title">상해 담보</div><div style="font-size:10px;color:#71717a;margin-top:1px">사고·상해로 인한 보장</div></div>
+              <div class="cat-count">9항목</div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5">상해 <span class="term" onclick="showTip(event,'후유장해')">후유장해</span> (3~100%)</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5">상해사고로 <span class="term" onclick="showTip(event,'후유장해')">후유장해</span> 3~100% 발생 시 가입금액에 <span class="term" onclick="showTip(event,'후유장해지급률')">후유장해지급률</span> 곱한 금액 지급</div>
+              <div style="display:flex;align-items:center;justify-content:space-between"><span class="bdg bdg-green">110세만기</span><span class="amt-lg">1,000만원</span></div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5">상해사망</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5">보험기간 중 상해사고로 사망 시 가입금액 지급</div>
+              <div style="display:flex;align-items:center;justify-content:space-between"><span class="bdg bdg-green">110세만기</span><span class="amt-lg">2,000만원</span></div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5">상해 80%↑ <span class="term" onclick="showTip(event,'후유장해')">후유장해</span></div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5">상해사고로 80% 이상 <span class="term" onclick="showTip(event,'후유장해')">후유장해</span> 발생 시 가입금액 지급 (1회한)</div>
+              <div style="display:flex;align-items:center;justify-content:space-between"><span class="bdg bdg-green">110세만기</span><span class="amt-lg">2,000만원</span></div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5"><span class="term" onclick="showTip(event,'대중교통')">대중교통</span> 상해사망</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5"><span class="term" onclick="showTip(event,'대중교통')">대중교통</span> 이용 중 교통상해로 사망 시 가입금액 지급</div>
+              <div style="display:flex;align-items:center;justify-content:space-between"><span class="bdg bdg-green">110세만기</span><span style="font-size:1rem;font-weight:800;color:#fbbf24">2억 8,000만원</span></div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5"><span class="term" onclick="showTip(event,'대중교통')">대중교통</span> 상해 80%↑ <span class="term" onclick="showTip(event,'후유장해')">후유장해</span></div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5"><span class="term" onclick="showTip(event,'대중교통')">대중교통</span> 이용 중 교통상해로 80% 이상 <span class="term" onclick="showTip(event,'후유장해')">후유장해</span> 발생 시 가입금액 지급 (1회한)</div>
+              <div style="display:flex;align-items:center;justify-content:space-between"><span class="bdg bdg-green">110세만기</span><span style="font-size:1rem;font-weight:800;color:#fbbf24">2억 8,000만원</span></div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5">화상진단비</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5">상해사고로 심재성 2도 이상 화상 진단 확정 시 지급 (1사고당)</div>
+              <div style="display:flex;align-items:center;justify-content:space-between"><span class="bdg bdg-green">110세만기</span><span class="amt-md">30만원</span></div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5">골절진단비 (치아제외)</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5">상해사고로 골절 진단 (치아파절 제외) 시 가입금액 지급 (1사고당)</div>
+              <div style="display:flex;align-items:center;justify-content:space-between"><span class="bdg bdg-green">110세만기</span><span class="amt-md">30만원</span></div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5"><span class="term" onclick="showTip(event,'5대골절')">5대골절</span>진단비</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5">상해로 <span class="term" onclick="showTip(event,'5대골절')">5대골절</span> 진단 확정 시 가입금액 지급 (1사고당)</div>
+              <div style="display:flex;align-items:center;justify-content:space-between"><span class="bdg bdg-green">110세만기</span><span class="amt-md">20만원</span></div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5"><span class="term" onclick="showTip(event,'깁스')">깁스</span>치료비</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5">질병 또는 상해로 <span class="term" onclick="showTip(event,'깁스')">깁스(Cast)</span> 치료 시 가입금액 지급 (1사고당, 부목 제외)</div>
+              <div style="display:flex;align-items:center;justify-content:space-between"><span class="bdg bdg-green">110세만기</span><span class="amt-md">5만원</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Slide 2: 질병 -->
+        <div class="swiper-slide" data-cat="p1" data-idx="1">
+          <div class="slide-card glass">
+            <div class="slide-header">
+              <div class="icon-wrap" style="background:rgba(99,102,241,.12)"><iconify-icon icon="solar:heart-pulse-bold" style="font-size:15px;color:#818cf8"></iconify-icon></div>
+              <div><div class="cat-title">질병 담보</div><div style="font-size:10px;color:#71717a;margin-top:1px">질병으로 인한 보장</div></div>
+              <div class="cat-count">2항목</div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5">질병 80%↑ <span class="term" onclick="showTip(event,'후유장해')">후유장해</span></div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5">질병으로 80% 이상 <span class="term" onclick="showTip(event,'후유장해')">후유장해</span> 발생 시 가입금액 지급 (1회한)</div>
+              <div style="display:flex;align-items:center;justify-content:space-between"><span class="bdg bdg-blue">80세만기</span><span class="amt-lg">1,000만원</span></div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5"><span class="term" onclick="showTip(event,'만성당뇨합병증')">만성당뇨합병증</span>진단비</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5"><span class="term" onclick="showTip(event,'만성당뇨합병증')">만성당뇨합병증</span> 진단 확정 시 가입금액 지급 (1회한). 가입 후 1년 미만 50% 지급</div>
+              <div style="display:flex;align-items:center;justify-content:space-between"><span class="bdg bdg-blue">80세만기</span><span class="amt-md">500만원</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Slide 3: 수술·기타 -->
+        <div class="swiper-slide" data-cat="p1" data-idx="2">
+          <div class="slide-card glass">
+            <div class="slide-header">
+              <div class="icon-wrap" style="background:rgba(239,68,68,.1)"><iconify-icon icon="solar:scalpel-linear" style="font-size:15px;color:#f87171"></iconify-icon></div>
+              <div><div class="cat-title">수술·기타 담보</div><div style="font-size:10px;color:#71717a;margin-top:1px">수술 및 배상책임 보장</div></div>
+              <div class="cat-count">6항목</div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5"><span class="term" onclick="showTip(event,'7대질병')">7대질병</span>수술비</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5"><span class="term" onclick="showTip(event,'7대질병')">7대질병</span>으로 진단 후 수술 시 가입금액 지급. 가입 후 1년 미만 50%</div>
+              <div style="display:flex;align-items:center;justify-content:space-between"><span class="bdg bdg-blue">80세만기</span><span class="amt-md">100만원</span></div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5"><span class="term" onclick="showTip(event,'5대장기')">5대장기</span>이식수술비</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5"><span class="term" onclick="showTip(event,'5대장기')">5대장기</span> 이식수술 수혜 시 가입금액 지급 (1회한)</div>
+              <div style="display:flex;align-items:center;justify-content:space-between"><span class="bdg bdg-blue">80세만기</span><span class="amt-lg">1,000만원</span></div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5">각막이식수술비</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5">질병·상해로 각막이식수술 수혜 시 가입금액 지급 (1회한)</div>
+              <div style="display:flex;align-items:center;justify-content:space-between"><span class="bdg bdg-blue">80세만기</span><span class="amt-lg">1,000만원</span></div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5"><span class="term" onclick="showTip(event,'조혈모세포')">조혈모세포</span>이식수술비</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5">질병으로 <span class="term" onclick="showTip(event,'조혈모세포')">조혈모세포</span>이식수술 수혜 시 가입금액 지급 (1회한)</div>
+              <div style="display:flex;align-items:center;justify-content:space-between"><span class="bdg bdg-blue">80세만기</span><span class="amt-lg">1,000만원</span></div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5">인공관절수술비</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5">질병·상해로 인공관절수술 시 매 수술마다 가입금액 지급</div>
+              <div style="display:flex;align-items:center;justify-content:space-between"><span class="bdg bdg-blue">80세만기</span><span class="amt-md">30만원</span></div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5">가족일상생활 <span class="term" onclick="showTip(event,'배상책임')">배상책임</span></div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5">일상생활 중 타인에게 법률상 <span class="term" onclick="showTip(event,'배상책임')">배상책임</span> 발생 시 한도 내 지급 (대물사고 자기부담금 20만원)</div>
+              <div style="display:flex;align-items:center;justify-content:space-between"><div style="display:flex;gap:4px"><span class="bdg bdg-green">110세만기</span><span class="bdg bdg-purple">실손</span></div><span class="amt-lg">1억원</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Slide 4: 실손의료비 -->
+        <div class="swiper-slide" data-cat="p1" data-idx="3">
+          <div class="slide-card glass">
+            <div class="slide-header">
+              <div class="icon-wrap" style="background:rgba(168,85,247,.1)"><iconify-icon icon="solar:hospital-bold" style="font-size:15px;color:#c084fc"></iconify-icon></div>
+              <div><div class="cat-title">실손 의료비 담보</div><div style="font-size:10px;color:#71717a;margin-top:1px">3년마다 보험료 갱신</div></div>
+              <div class="cat-count">5항목</div>
+            </div>
+            <div style="padding:8px 18px;background:rgba(234,179,8,.05);border-bottom:1px solid rgba(255,255,255,.05)">
+              <div style="font-size:11px;color:#a16207;display:flex;align-items:center;gap:5px"><iconify-icon icon="solar:danger-triangle-linear" style="font-size:12px;color:#eab308"></iconify-icon><span class="term" onclick="showTip(event,'갱신형')" style="color:#eab308">갱신형 담보</span>: 3년마다 보험료가 재산정되며 인상될 수 있습니다.</div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5">신종합입원의료비</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5">상해·질병 입원 시 <span class="term" onclick="showTip(event,'급여')">급여</span> 본인부담금 + <span class="term" onclick="showTip(event,'비급여')">비급여</span> 합계의 90% 보상 (연간 200만원 초과분 전액)</div>
+              <div style="display:flex;align-items:center;justify-content:space-between"><div style="display:flex;gap:4px"><span class="bdg bdg-yellow">3년갱신</span><span class="bdg bdg-blue">최대 100세</span></div><span class="amt-lg">5,000만원</span></div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5">상해 외래의료비</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5">상해로 병원 통원 시 <span class="term" onclick="showTip(event,'자기부담금')">자기부담금</span> (1만/1.5만/2만) 공제 후 보상 (연 180회)</div>
+              <div style="display:flex;align-items:center;justify-content:space-between"><div style="display:flex;gap:4px"><span class="bdg bdg-yellow">3년갱신</span><span class="bdg bdg-blue">최대 100세</span></div><span class="amt-md">25만원</span></div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5">상해 약제의료비</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5">상해로 처방조제 시 8천원 공제 후 보상 (연 180건)</div>
+              <div style="display:flex;align-items:center;justify-content:space-between"><div style="display:flex;gap:4px"><span class="bdg bdg-yellow">3년갱신</span><span class="bdg bdg-blue">최대 100세</span></div><span class="amt-md">5만원</span></div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5">질병 외래의료비</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5">질병으로 병원 통원 시 <span class="term" onclick="showTip(event,'자기부담금')">자기부담금</span> 공제 후 보상 (연 180회)</div>
+              <div style="display:flex;align-items:center;justify-content:space-between"><div style="display:flex;gap:4px"><span class="bdg bdg-yellow">3년갱신</span><span class="bdg bdg-blue">최대 100세</span></div><span class="amt-md">25만원</span></div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5">질병 약제의료비</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5">질병으로 처방조제 시 8천원 공제 후 보상 (연 180건)</div>
+              <div style="display:flex;align-items:center;justify-content:space-between"><div style="display:flex;gap:4px"><span class="bdg bdg-yellow">3년갱신</span><span class="bdg bdg-blue">최대 100세</span></div><span class="amt-md">5만원</span></div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5">국내사고 해외치료 입원의료비</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5">국내 사고·질병으로 해외 의료기관 입원 시 본인부담금의 40% 보상 (US$1,000 한도)</div>
+              <div style="display:flex;align-items:center;justify-content:space-between"><div style="display:flex;gap:4px"><span class="bdg bdg-yellow">3년갱신</span><span class="bdg bdg-blue">최대 100세</span></div><span class="amt-lg">5,000만원</span></div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /swiper p1 -->
+      <div class="dots mt-2" id="dots-p1">
+        <div class="dot active" onclick="goSlide('p1',0)"></div>
+        <div class="dot" onclick="goSlide('p1',1)"></div>
+        <div class="dot" onclick="goSlide('p1',2)"></div>
+        <div class="dot" onclick="goSlide('p1',3)"></div>
+      </div>
+    </div><!-- /swiper-wrap p1 -->
+
+  </div><!-- /pane p1 -->
+
+  <!-- ════════════════════ POLICY 2 ════════════════════ -->
+  <div id="pane-p2" class="policy-pane fade-up d2">
+
+    <!-- Info card -->
+    <div class="glass" style="border-radius:1rem;padding:16px 18px;margin-bottom:18px">
+      <div style="font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:#52525b;font-weight:700;margin-bottom:12px">기본 정보</div>
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px">
+        <div><div style="font-size:10px;color:#52525b;margin-bottom:2px">증권번호</div><div style="font-size:.82rem;font-weight:600;color:#d4d4d8">32026****002</div></div>
+        <div><div style="font-size:10px;color:#52525b;margin-bottom:2px">보험기간</div><div style="font-size:.82rem;font-weight:600;color:#d4d4d8">90세만기 <span style="font-size:10px;color:#71717a">~2078.03.31</span></div></div>
+        <div><div style="font-size:10px;color:#52525b;margin-bottom:2px">납입방법</div><div style="font-size:.82rem;font-weight:600;color:#d4d4d8">20년납 · 월납 · CMS (21일)</div></div>
+        <div><div style="font-size:10px;color:#52525b;margin-bottom:2px">발행구분</div><div style="font-size:.82rem;font-weight:600;color:#4ade80">신규 <span style="font-size:10px;color:#71717a">2026.03.31</span></div></div>
+      </div>
+      <div style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,.05)">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+          <div>
+            <div style="font-size:10px;color:#52525b;margin-bottom:2px">월 보험료 (전액 보장)</div>
+            <div style="font-size:1.2rem;font-weight:800;color:#818cf8">119,927원</div>
+          </div>
+          <div style="font-size:11px;color:#f87171;background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.18);padding:5px 10px;border-radius:7px;display:flex;align-items:center;gap:5px">
+            <iconify-icon icon="solar:danger-triangle-linear" style="font-size:12px"></iconify-icon>
+            <span class="term" onclick="showTip(event,'부담보')" style="color:#fca5a5">부담보</span>: 왼쪽 어깨 3년 보장 제한
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filter bar p2 -->
+    <div class="filter-bar mb-3" id="filters-p2">
+      <button class="filter-btn active" onclick="filterSlide('p2',0,this)">전체</button>
+      <button class="filter-btn" onclick="filterSlide('p2',1,this)">기본상해</button>
+      <button class="filter-btn" onclick="filterSlide('p2',2,this)">암</button>
+      <button class="filter-btn" onclick="filterSlide('p2',3,this)">심·뇌혈관</button>
+      <button class="filter-btn" onclick="filterSlide('p2',4,this)">질병수술·기타</button>
+      <button class="filter-btn" onclick="filterSlide('p2',5,this)">납입면제</button>
+    </div>
+
+    <!-- Swiper p2 -->
+    <div class="swiper-wrap">
+      <div class="swiper" id="swiper-p2" onscroll="onSwipe('p2')">
+
+        <!-- Slide 1: 기본 상해 -->
+        <div class="swiper-slide" data-cat="p2" data-idx="0">
+          <div class="slide-card glass">
+            <div class="slide-header">
+              <div class="icon-wrap" style="background:rgba(251,191,36,.12)"><iconify-icon icon="solar:shield-warning-bold" style="font-size:15px;color:#fbbf24"></iconify-icon></div>
+              <div><div class="cat-title">기본 상해 담보</div><div style="font-size:10px;color:#71717a;margin-top:1px">상해·사고 보장</div></div>
+              <div class="cat-count">4항목</div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5">상해 <span class="term" onclick="showTip(event,'후유장해')">후유장해</span> (3~100%)</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5">상해사고로 <span class="term" onclick="showTip(event,'후유장해')">후유장해</span> 3~100% 발생 시 가입금액에 <span class="term" onclick="showTip(event,'후유장해지급률')">지급률</span> 곱한 금액 지급</div>
+              <div style="display:flex;align-items:center;justify-content:space-between"><span class="bdg bdg-green">90세만기</span><span class="amt-md">100만원</span></div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5">상해 1~5종 수술비</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5">상해사고로 <span class="term" onclick="showTip(event,'수술종류')">1~5종 수술</span> 시 해당 종 수술의 가입금액 지급 (동일사고당 1회, 가장 높은 종 기준)</div>
+              <div style="display:flex;align-items:center;justify-content:space-between"><span class="bdg bdg-green">90세만기</span>
+                <div style="text-align:right"><div style="font-size:10px;color:#52525b;margin-bottom:2px">5종/4종/3종/2종/1종</div><span class="amt-lg">600/300/100/30/20만원</span></div>
+              </div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5"><span class="term" onclick="showTip(event,'5대골절')">5대골절</span>진단비</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5"><span class="term" onclick="showTip(event,'5대골절')">5대골절</span>(머리·목·등뼈·허리뼈·넓적다리뼈) 진단 확정 시 가입금액 지급 (1사고당)</div>
+              <div style="display:flex;align-items:center;justify-content:space-between"><span class="bdg bdg-green">90세만기</span><span class="amt-lg">100만원</span></div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5">골절진단비 (치아제외)</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5">상해로 골절 진단 확정 시 1사고당 가입금액 지급 (치아파절 제외)</div>
+              <div style="display:flex;align-items:center;justify-content:space-between"><span class="bdg bdg-green">90세만기</span><span class="amt-md">20만원</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Slide 2: 암 -->
+        <div class="swiper-slide" data-cat="p2" data-idx="1">
+          <div class="slide-card glass">
+            <div class="slide-header">
+              <div class="icon-wrap" style="background:rgba(34,197,94,.1)"><iconify-icon icon="solar:dna-bold" style="font-size:15px;color:#4ade80"></iconify-icon></div>
+              <div><div class="cat-title">암 담보</div><div style="font-size:10px;color:#71717a;margin-top:1px">진단 · 치료 고액 보장</div></div>
+              <div class="cat-count">10항목</div>
+            </div>
+            <div class="cov-row" style="background:rgba(34,197,94,.02)">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5">암진단비 (<span class="term" onclick="showTip(event,'유사암')">유사암</span> 제외)</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5"><span class="term" onclick="showTip(event,'보장개시일')">보장개시일</span> 이후 암 진단 확정 시 가입금액 지급 (최초 1회한)</div>
+              <div style="display:flex;align-items:center;justify-content:space-between"><span class="bdg bdg-green">90세만기</span><span class="amt-xl">5,000만원</span></div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5">통합 <span class="term" onclick="showTip(event,'유사암')">유사암</span>진단비</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5"><span class="term" onclick="showTip(event,'유사암')">유사암</span>(제자리암·경계성종양·기타피부암·갑상선암) 각 진단 확정 시 가입금액 지급 (각 1회한)</div>
+              <div style="display:flex;align-items:center;justify-content:space-between"><span class="bdg bdg-green">90세만기</span><span class="amt-lg">1,000만원</span></div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5"><span class="term" onclick="showTip(event,'중입자방사선')">항암 중입자방사선</span>치료비</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5"><span class="term" onclick="showTip(event,'보장개시일')">보장개시일</span> 이후 암 진단 후 <span class="term" onclick="showTip(event,'중입자방사선')">중입자방사선치료</span> 시 가입금액 100% 지급 (최초 1회한)</div>
+              <div style="display:flex;align-items:center;justify-content:space-between"><span class="bdg bdg-green">90세만기</span><span class="amt-xl">5,000만원</span></div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5"><span class="term" onclick="showTip(event,'표적항암')">비급여표적항암약물</span>치료비</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5">암 치료 목적 <span class="term" onclick="showTip(event,'표적항암')">비급여표적항암약물치료</span> 시 가입금액 지급 (최초 1회한, 6개월 미만 25%)</div>
+              <div style="display:flex;align-items:center;justify-content:space-between"><span class="bdg bdg-green">90세만기</span><span class="amt-xl">5,000만원</span></div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5">특정항암호르몬약물치료비</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5">암 치료 목적 특정항암호르몬약물 허가치료 시 가입금액 지급 (연간 1회한, 1년 미만 50%)</div>
+              <div style="display:flex;align-items:center;justify-content:space-between"><span class="bdg bdg-green">90세만기</span><span class="amt-lg">300만원</span></div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5">갑상선암 호르몬약물치료비</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5">갑상선암 수술 후 호르몬약물허가치료 시 가입금액 지급 (최초 1회한, 1년 미만 50%)</div>
+              <div style="display:flex;align-items:center;justify-content:space-between"><span class="bdg bdg-green">90세만기</span><span class="amt-md">100만원</span></div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5">항암방사선·약물치료비 (<span class="term" onclick="showTip(event,'유사암')">유사암</span> 포함)</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5">암 항암방사선·약물치료 시 가입금액 지급 (최초 1회한). <span class="term" onclick="showTip(event,'유사암')">유사암</span>은 가입금액의 20% 지급</div>
+              <div style="display:flex;align-items:center;justify-content:space-between"><span class="bdg bdg-green">90세만기</span><span class="amt-md">100만원</span></div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5">암 주요치료비 (<span class="term" onclick="showTip(event,'상급종합병원')">상급종합병원</span>)</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5">암 최초 진단 후 10년 이내, <span class="term" onclick="showTip(event,'상급종합병원')">상급종합병원</span>에서 암 주요치료(수술·방사선·약물) 시 연간 1회 지급 (최대 10회)</div>
+              <div style="display:flex;align-items:center;justify-content:space-between"><span class="bdg bdg-green">90세만기</span><span class="amt-lg">1,000만원/년</span></div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5">기타피부암·갑상선암 주요치료비</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5"><span class="term" onclick="showTip(event,'상급종합병원')">상급종합병원</span>에서 기타피부암·갑상선암 주요치료 시 연간 1회 지급 (최대 10회)</div>
+              <div style="display:flex;align-items:center;justify-content:space-between"><span class="bdg bdg-green">90세만기</span><span class="amt-lg">200만원/년</span></div>
+            </div>
+            <div class="cov-row" style="background:rgba(59,130,246,.02)">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5"><span class="term" onclick="showTip(event,'비급여암주요치료')">비급여 암주요치료비</span></div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5"><span class="term" onclick="showTip(event,'비급여암주요치료')">다빈치로봇수술·양성자방사선·표적항암·특정면역항암</span> 치료 시 항목별 연간 한도 내 지급</div>
+              <div style="display:flex;align-items:center;justify-content:space-between"><span class="bdg bdg-green">90세만기</span><span class="amt-blue" style="font-size:1rem;font-weight:800">8,000만원/년 한도</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Slide 3: 심뇌혈관 -->
+        <div class="swiper-slide" data-cat="p2" data-idx="2">
+          <div class="slide-card glass">
+            <div class="slide-header">
+              <div class="icon-wrap" style="background:rgba(239,68,68,.1)"><iconify-icon icon="solar:heart-bold" style="font-size:15px;color:#f87171"></iconify-icon></div>
+              <div><div class="cat-title">심·뇌혈관 담보</div><div style="font-size:10px;color:#71717a;margin-top:1px">뇌·심장 관련 보장</div></div>
+              <div class="cat-count">3항목</div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5"><span class="term" onclick="showTip(event,'뇌혈관질환')">뇌혈관질환</span>진단비</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5"><span class="term" onclick="showTip(event,'뇌혈관질환')">뇌혈관질환</span> 진단 확정 시 가입금액 지급 (1회한)</div>
+              <div style="display:flex;align-items:center;justify-content:space-between"><span class="bdg bdg-green">90세만기</span><span class="amt-lg">1,000만원</span></div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5"><span class="term" onclick="showTip(event,'허혈심장질환')">허혈심장질환</span>진단비</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5"><span class="term" onclick="showTip(event,'허혈심장질환')">허혈심장질환</span> 진단 확정 시 가입금액 지급 (1회한)</div>
+              <div style="display:flex;align-items:center;justify-content:space-between"><span class="bdg bdg-green">90세만기</span><span class="amt-lg">1,000만원</span></div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5"><span class="term" onclick="showTip(event,'순환계질환')">순환계질환(3~5종)</span> 주요치료비</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5"><span class="term" onclick="showTip(event,'순환계질환')">순환계질환(3~5종)</span> 진단 후 수술 / 중환자실 입원 / 혈전용해치료 시 각각 가입금액 지급 (각 연간 1회 또는 수술당)</div>
+              <div style="display:flex;align-items:center;justify-content:space-between"><span class="bdg bdg-green">90세만기</span><div style="text-align:right"><div style="font-size:10px;color:#52525b;margin-bottom:2px">항목당</div><span class="amt-lg">1,000만원</span></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Slide 4: 질병수술·기타 -->
+        <div class="swiper-slide" data-cat="p2" data-idx="3">
+          <div class="slide-card glass">
+            <div class="slide-header">
+              <div class="icon-wrap" style="background:rgba(99,102,241,.12)"><iconify-icon icon="solar:scalpel-linear" style="font-size:15px;color:#818cf8"></iconify-icon></div>
+              <div><div class="cat-title">질병 수술·기타 담보</div><div style="font-size:10px;color:#71717a;margin-top:1px">중증질환·이식수술 보장</div></div>
+              <div class="cat-count">5항목</div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5">질병 1~5종 수술비</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5">질병 치료 목적 <span class="term" onclick="showTip(event,'수술종류')">1~5종 수술</span> 시 가입금액 지급 (동일질병당 1회, 가장 높은 종 기준)</div>
+              <div style="display:flex;align-items:center;justify-content:space-between"><span class="bdg bdg-green">90세만기</span>
+                <div style="text-align:right"><div style="font-size:10px;color:#52525b;margin-bottom:2px">5종/4종/3종/2종/1종</div><span class="amt-lg">1,000/1,000/100/30/30만원</span></div>
+              </div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5">양성뇌종양진단비</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5">양성뇌종양 진단 확정 시 가입금액 지급 (1회한)</div>
+              <div style="display:flex;align-items:center;justify-content:space-between"><span class="bdg bdg-green">90세만기</span><span class="amt-lg">2,000만원</span></div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5"><span class="term" onclick="showTip(event,'5대장기')">5대장기</span>이식수술비</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5"><span class="term" onclick="showTip(event,'5대장기')">5대장기</span>(간장·신장·심장·췌장·폐장) 이식수술 시 가입금액 지급 (1회한)</div>
+              <div style="display:flex;align-items:center;justify-content:space-between"><span class="bdg bdg-blue">80세만기</span><span class="amt-lg">3,000만원</span></div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5">각막이식수술비</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5">질병·상해로 각막이식수술 수혜 시 가입금액 지급 (1회한)</div>
+              <div style="display:flex;align-items:center;justify-content:space-between"><span class="bdg bdg-blue">80세만기</span><span class="amt-lg">3,000만원</span></div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5"><span class="term" onclick="showTip(event,'조혈모세포')">조혈모세포</span>이식수술비</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5">질병으로 <span class="term" onclick="showTip(event,'조혈모세포')">조혈모세포</span>이식수술 수혜 시 가입금액 지급 (1회한, 1년 미만 50%)</div>
+              <div style="display:flex;align-items:center;justify-content:space-between"><span class="bdg bdg-blue">80세만기</span><span class="amt-lg">2,000만원</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Slide 5: 납입면제 -->
+        <div class="swiper-slide" data-cat="p2" data-idx="4">
+          <div class="slide-card glass">
+            <div class="slide-header">
+              <div class="icon-wrap" style="background:rgba(168,85,247,.1)"><iconify-icon icon="solar:shield-star-bold" style="font-size:15px;color:#c084fc"></iconify-icon></div>
+              <div><div class="cat-title">보험료 납입면제</div><div style="font-size:10px;color:#71717a;margin-top:1px">중증 진단 시 보험료 면제</div></div>
+            </div>
+            <div style="padding:14px 18px;background:rgba(99,102,241,.04);border-bottom:1px solid rgba(255,255,255,.05)">
+              <div style="font-size:12px;color:#a5b4fc;line-height:1.8">납입기간 중 아래 사유 중 하나가 발생하면 <strong>이후 보험료 납입이 면제</strong>됩니다.</div>
+            </div>
+            <div class="cov-row" style="padding:12px 18px">
+              <div style="font-size:.82rem;color:#d4d4d8;line-height:2">
+                <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:6px"><span style="color:#818cf8;font-weight:700;font-size:11px;min-width:16px">①</span>상해·질병 50% 이상 <span class="term" onclick="showTip(event,'후유장해')">후유장해</span></div>
+                <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:6px"><span style="color:#818cf8;font-weight:700;font-size:11px;min-width:16px">②</span>암 진단 확정 (<span class="term" onclick="showTip(event,'유사암')">유사암</span> 제외, <span class="term" onclick="showTip(event,'보장개시일')">보장개시일</span> 이후)</div>
+                <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:6px"><span style="color:#818cf8;font-weight:700;font-size:11px;min-width:16px">③</span><span class="term" onclick="showTip(event,'뇌혈관질환')">뇌혈관질환</span> 진단 확정</div>
+                <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:6px"><span style="color:#818cf8;font-weight:700;font-size:11px;min-width:16px">④</span><span class="term" onclick="showTip(event,'허혈심장질환')">허혈심장질환</span> 진단 확정</div>
+                <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:6px"><span style="color:#818cf8;font-weight:700;font-size:11px;min-width:16px">⑤</span>5대난치성질환 진단 확정</div>
+                <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:6px"><span style="color:#818cf8;font-weight:700;font-size:11px;min-width:16px">⑥</span><span class="term" onclick="showTip(event,'만성당뇨합병증')">만성당뇨합병증</span> 진단 확정</div>
+                <div style="display:flex;align-items:baseline;gap:8px"><span style="color:#818cf8;font-weight:700;font-size:11px;min-width:16px">⑦</span>양성뇌종양 진단 확정</div>
+              </div>
+            </div>
+            <div style="padding:10px 18px 14px">
+              <div style="font-size:11px;color:#52525b;line-height:1.7">⑥⑦ 사유는 25~29종에 한하여 적용 · 자동갱신 특약 및 보험금 지급으로 소멸된 특약은 면제 제외</div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /swiper p2 -->
+      <div class="dots mt-2" id="dots-p2">
+        <div class="dot active blue" onclick="goSlide('p2',0)"></div>
+        <div class="dot" onclick="goSlide('p2',1)"></div>
+        <div class="dot" onclick="goSlide('p2',2)"></div>
+        <div class="dot" onclick="goSlide('p2',3)"></div>
+        <div class="dot" onclick="goSlide('p2',4)"></div>
+      </div>
+    </div><!-- /swiper-wrap p2 -->
+
+  </div><!-- /pane p2 -->
+
+  <!-- ════════════════════ POLICY 3: KB 펫보험 ════════════════════ -->
+  <div id="pane-p3" class="policy-pane fade-up d2">
+
+    <!-- Info card -->
+    <div class="glass" style="border-radius:1rem;padding:16px 18px;margin-bottom:18px">
+      <div style="font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:#52525b;font-weight:700;margin-bottom:12px">기본 정보</div>
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px">
+        <div><div style="font-size:10px;color:#52525b;margin-bottom:2px">증권번호</div><div style="font-size:.82rem;font-weight:600;color:#d4d4d8">2025-0299860</div></div>
+        <div><div style="font-size:10px;color:#52525b;margin-bottom:2px">보험기간</div><div style="font-size:.82rem;font-weight:600;color:#d4d4d8">20년만기 <span style="font-size:10px;color:#71717a">~2045.01.14</span></div></div>
+        <div><div style="font-size:10px;color:#52525b;margin-bottom:2px">납입방법</div><div style="font-size:.82rem;font-weight:600;color:#d4d4d8">20년납 · 월납 · 카드</div></div>
+        <div><div style="font-size:10px;color:#52525b;margin-bottom:2px">갱신구조</div><div style="font-size:.82rem;font-weight:600;color:#d4d4d8">5년갱신 · 프리미엄</div></div>
+      </div>
+      <!-- 까망 정보 -->
+      <div style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,.05)">
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="width:36px;height:36px;border-radius:10px;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.2);display:flex;align-items:center;justify-content:center;font-size:20px">🐾</div>
+            <div>
+              <div style="font-size:13px;font-weight:700;color:#4ade80">까망</div>
+              <div style="font-size:11px;color:#71717a">포메라니안 · 남아 · 만 5세 · 중성화O</div>
+            </div>
+          </div>
+          <div style="margin-left:auto;text-align:right">
+            <div style="font-size:10px;color:#52525b;margin-bottom:2px">월 보험료 (동물등록 할인 적용)</div>
+            <div style="font-size:1.2rem;font-weight:800;color:#4ade80">78,727원</div>
+            <div style="font-size:10px;color:#71717a">갱신 보장보험료: 78,677원</div>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:10px;padding:8px 10px;background:rgba(34,197,94,.05);border:1px solid rgba(34,197,94,.15);border-radius:8px;font-size:11px;color:#4ade80">
+        <iconify-icon icon="solar:tag-price-bold" style="font-size:12px;margin-right:4px"></iconify-icon>
+        동물등록 우대 할인 적용 중 · 동물등록번호: 4100933********
+      </div>
+    </div>
+
+    <!-- Filter bar p3 -->
+    <div class="filter-bar mb-3" id="filters-p3">
+      <button class="filter-btn active" onclick="filterSlide('p3',0,this)">전체</button>
+      <button class="filter-btn" onclick="filterSlide('p3',1,this)">피보험자(사람)</button>
+      <button class="filter-btn" onclick="filterSlide('p3',2,this)">의료비 기본</button>
+      <button class="filter-btn" onclick="filterSlide('p3',3,this)">의료비 확장</button>
+    </div>
+
+    <!-- Swiper p3 -->
+    <div class="swiper-wrap">
+      <div class="swiper all-mode" id="swiper-p3" onscroll="onSwipe('p3')">
+
+        <!-- Slide 0: 피보험자 담보 -->
+        <div class="swiper-slide" data-cat="p3" data-idx="0">
+          <div class="slide-card glass">
+            <div class="slide-header">
+              <div class="icon-wrap" style="background:rgba(251,191,36,.12)"><iconify-icon icon="solar:shield-warning-bold" style="font-size:15px;color:#fbbf24"></iconify-icon></div>
+              <div><div class="cat-title">피보험자(사람) 담보</div><div style="font-size:10px;color:#71717a;margin-top:1px">계약자 배○○님 보장</div></div>
+              <div class="cat-count">1항목</div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5">일반상해 80%↑ <span class="term" onclick="showTip(event,'후유장해')">후유장해</span> [기본계약]</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5">보험기간 중 상해로 <span class="term" onclick="showTip(event,'후유장해')">장해분류표</span>에서 정한 80% 이상 장해지급률에 해당하는 장해상태가 된 경우</div>
+              <div style="display:flex;align-items:center;justify-content:space-between"><span class="bdg bdg-green">20년만기</span><span class="amt-lg">1,000만원</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Slide 1: 반려동물 의료비 기본 -->
+        <div class="swiper-slide" data-cat="p3" data-idx="1">
+          <div class="slide-card glass">
+            <div class="slide-header">
+              <div class="icon-wrap" style="background:rgba(34,197,94,.1)"><iconify-icon icon="solar:hospital-bold" style="font-size:15px;color:#4ade80"></iconify-icon></div>
+              <div><div class="cat-title">반려동물 의료비 기본</div><div style="font-size:10px;color:#71717a;margin-top:1px">입원·수술·통원 실손 보장 (90%)</div></div>
+              <div class="cat-count">2항목</div>
+            </div>
+            <div style="padding:8px 18px;background:rgba(234,179,8,.05);border-bottom:1px solid rgba(255,255,255,.05)">
+              <div style="font-size:11px;color:#a16207;display:flex;align-items:center;gap:5px">
+                <iconify-icon icon="solar:danger-triangle-linear" style="font-size:12px;color:#eab308"></iconify-icon>
+                <span class="term" onclick="showTip(event,'갱신형')" style="color:#eab308">5년갱신형</span>: 갱신 종료 나이 20세 · 보상비율 90% · 자기부담금 없음
+              </div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5">반려동물 의료비 (강아지)</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5">
+                <span class="term" onclick="showTip(event,'펫보장개시일')">보장개시일</span> 이후 상해·질병 발생 시 국내 수의사 치료비 실손 보상<br>
+                <span style="color:#52525b">고급형 · 1일 한도 30만원 / 수술 1일 250만원 / 연간 한도 2,000만원</span>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between"><div style="display:flex;gap:4px"><span class="bdg bdg-yellow">5년갱신</span><span class="bdg bdg-green">~20세</span></div><span class="amt-xl">2,000만원/년</span></div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5"><span class="term" onclick="showTip(event,'슬관절')">슬관절·고관절 탈구</span> 및 <span class="term" onclick="showTip(event,'치과구강')">치과·구강질환</span></div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5">
+                <span class="term" onclick="showTip(event,'슬관절')">슬관절·고관절 탈구/형성부전</span> 또는 <span class="term" onclick="showTip(event,'치과구강')">치과·구강질환</span>(치석제거 포함) 발생 시 의료비 실손 보상<br>
+                <span style="color:#f87171;font-size:11px">슬관절/고관절 보장개시일: 계약일로부터 <strong>1년 후</strong></span>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between"><div style="display:flex;gap:4px"><span class="bdg bdg-yellow">5년갱신</span><span class="bdg bdg-green">~20세</span></div><span class="amt-xl">2,000만원/년</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Slide 2: 반려동물 의료비 확장 -->
+        <div class="swiper-slide" data-cat="p3" data-idx="2">
+          <div class="slide-card glass">
+            <div class="slide-header">
+              <div class="icon-wrap" style="background:rgba(99,102,241,.12)"><iconify-icon icon="solar:add-square-bold" style="font-size:15px;color:#818cf8"></iconify-icon></div>
+              <div><div class="cat-title">반려동물 의료비 확장</div><div style="font-size:10px;color:#71717a;margin-top:1px">특수·고가 치료 추가 보장 (90%)</div></div>
+              <div class="cat-count">5항목</div>
+            </div>
+            <div style="padding:8px 18px;background:rgba(99,102,241,.05);border-bottom:1px solid rgba(255,255,255,.05)">
+              <div style="font-size:11px;color:#818cf8">확장 담보는 기본 의료비보험금 차감 후 보상비율(90%)을 곱한 금액 지급</div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5"><span class="term" onclick="showTip(event,'MRICT')">MRI / CT</span> 촬영비</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5">상해·질병 치료 목적으로 <span class="term" onclick="showTip(event,'MRICT')">MRI 또는 CT</span> 촬영 시 보상 (연간 1회한)</div>
+              <div style="display:flex;align-items:center;justify-content:space-between"><div style="display:flex;gap:4px"><span class="bdg bdg-yellow">5년갱신</span><span class="bdg bdg-blue">연 1회</span></div><span class="amt-lg">100만원</span></div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5"><span class="term" onclick="showTip(event,'백내장녹내장')">백내장·녹내장</span> 수술</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5"><span class="term" onclick="showTip(event,'백내장녹내장')">백내장·녹내장</span> 발생 시 수술 치료비 보상 (연간 1회한) · 보장개시일: 계약일 후 90일</div>
+              <div style="display:flex;align-items:center;justify-content:space-between"><div style="display:flex;gap:4px"><span class="bdg bdg-yellow">5년갱신</span><span class="bdg bdg-blue">연 1회</span></div><span class="amt-md">50만원</span></div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5">특정처치 — <span class="term" onclick="showTip(event,'이물제거')">이물제거</span></div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5">이물 섭취 시 <span class="term" onclick="showTip(event,'이물제거')">내시경 이물제거</span>(100%) 또는 구토유도약물(10%) 치료비 보상 (연간 2회한)</div>
+              <div style="display:flex;align-items:center;justify-content:space-between"><div style="display:flex;gap:4px"><span class="bdg bdg-yellow">5년갱신</span><span class="bdg bdg-blue">연 2회</span></div><span class="amt-lg">200만원</span></div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5"><span class="term" onclick="showTip(event,'특정약물')">특정약물</span> 치료비</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5">상해·질병 치료 목적 <span class="term" onclick="showTip(event,'특정약물')">특정약물치료</span> 시 보상 (연간 6회한) · 보장개시일: 계약일 후 90일</div>
+              <div style="display:flex;align-items:center;justify-content:space-between"><div style="display:flex;gap:4px"><span class="bdg bdg-yellow">5년갱신</span><span class="bdg bdg-blue">연 6회</span></div><span class="amt-md">10만원</span></div>
+            </div>
+            <div class="cov-row">
+              <div style="font-size:.88rem;font-weight:600;color:#f4f4f5"><span class="term" onclick="showTip(event,'재활치료')">특정재활치료</span>비</div>
+              <div style="font-size:.78rem;color:#71717a;margin:4px 0 6px;line-height:1.5">상해·질병 치료 목적 <span class="term" onclick="showTip(event,'재활치료')">재활치료</span> 시 보상 (연간 5회한) · 보장개시일: 계약일 후 30일</div>
+              <div style="display:flex;align-items:center;justify-content:space-between"><div style="display:flex;gap:4px"><span class="bdg bdg-yellow">5년갱신</span><span class="bdg bdg-blue">연 5회</span></div><span class="amt-md">5만원</span></div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /swiper p3 -->
+      <div class="dots mt-2" id="dots-p3" style="display:none"></div>
+    </div><!-- /swiper-wrap p3 -->
+
+  </div><!-- /pane p3 -->
+
+
+  <div class="glass fade-up d3" style="border-radius:1rem;padding:14px 16px;margin-top:20px">
+    <div style="font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:#52525b;font-weight:700;margin-bottom:9px">범례</div>
+    <div style="display:flex;gap:7px;flex-wrap:wrap">
+      <span class="bdg bdg-green">종신/만기형</span>
+      <span class="bdg bdg-yellow">갱신형 (보험료 변동)</span>
+      <span class="bdg bdg-blue">기간 한정</span>
+      <span class="bdg bdg-red">주의 필요</span>
+      <span class="bdg bdg-purple">실손</span>
+    </div>
+  </div>
+
+  <div style="margin-top:24px;text-align:center;font-size:10.5px;color:#3f3f46;line-height:1.9">
+    본 페이지는 보험증권 요약본입니다. 정확한 보장 내용은 약관을 참고하세요.<br>
+    DB손해보험 고객센터 1588-0100 · www.idbins.com
+  </div>
+</div>
+
+<script>
+// ──────────────────────────────────────────
+// Glossary
+// ──────────────────────────────────────────
+const G = {
+  '후유장해':'사고나 질병 치료 후에도 신체에 영구적 장애(기능 저하, 신체 일부 상실 등)가 남아있는 상태입니다. 후유장해 지급률에 따라 보험금이 산정됩니다.',
+  '후유장해지급률':'후유장해 정도에 따라 보험가입금액에 곱하는 비율입니다. 장해율 100% = 가입금액 전액, 50% = 가입금액의 50% 지급.',
+  '대중교통':'버스·지하철·기차·여객선·항공기·택시 등 불특정 다수가 이용하는 교통수단입니다. 이용 중 사고는 일반 상해보다 높은 보험금을 받을 수 있습니다.',
+  '보장개시일':'보험 보장이 실제 시작되는 날입니다. 암의 경우 계약일로부터 90일이 지난 다음 날부터 보장이 시작되며, 이전에 진단 시 미지급 또는 50%만 지급됩니다.',
+  '갱신형':'일정 기간(보통 3년)마다 보험료를 새로 계산하여 갱신하는 방식입니다. 나이 증가·위험률 변화에 따라 갱신 시 보험료가 인상될 수 있습니다.',
+  '유사암':'일반 암에 비해 치료 예후가 좋은 경증 암입니다. ① 갑상선암 ② 기타피부암 ③ 제자리암 ④ 경계성종양이 해당하며, 일반 암 가입금액의 20%만 지급됩니다.',
+  '만성당뇨합병증':'당뇨가 오래 지속되어 발생하는 합병증입니다. 당뇨성 망막병증·신증·신경병증 등이 포함됩니다.',
+  '5대골절':'중증도가 높은 5가지 골절 부위로, 머리·목·등뼈·허리뼈·넓적다리뼈(대퇴골)입니다. 일반 골절보다 많은 보험금이 지급됩니다.',
+  '깁스':'골절·염좌 치료를 위해 석고 붕대(Cast)로 신체를 고정하는 치료입니다. 단, 부목(Splint Cast)은 제외됩니다.',
+  '7대질병':'심장질환·뇌혈관질환·간질환·고혈압·당뇨·만성하기도질환·위십이지장궤양의 7가지 주요 만성 질환입니다.',
+  '5대장기':'생명 유지에 필수적인 장기로 간장·신장·심장·췌장·폐장입니다. 이식수술 시 고액 보험금이 지급됩니다.',
+  '조혈모세포':'골수에 있는 혈액 생성 세포입니다. 백혈병 등 혈액암 치료를 위해 이식수술이 필요하며 고난도·고비용입니다.',
+  '배상책임':'자신의 행동으로 타인에게 피해를 입혔을 때 법적으로 손해를 배상할 의무입니다. 예) 자전거 사고, 수도관 파손으로 아래층 침수.',
+  '비급여':'국민건강보험이 적용되지 않아 100% 본인이 부담하는 의료비입니다. 도수치료·비급여 MRI·특수 약제 등이 해당됩니다.',
+  '급여':'국민건강보험이 적용되어 의료비 일부를 지원받는 항목입니다. 환자는 본인부담금만 납부합니다.',
+  '자기부담금':'보험이 보장하는 의료비 중 본인이 직접 부담하는 금액입니다. 의원 1만원·병원 1.5만원·종합병원 2만원이 공제됩니다.',
+  '뇌혈관질환':'뇌 혈관에 문제가 생기는 질환입니다. 뇌졸중(뇌경색+뇌출혈)·뇌동맥류·일과성 뇌허혈발작(TIA) 등이 포함됩니다.',
+  '허혈심장질환':'심장에 혈액 공급이 부족해지는 질환입니다. 협심증·급성심근경색증 등이 포함되며 심장 관련 중증 질환을 광범위하게 보장합니다.',
+  '순환계질환':'혈액순환 관련 질환으로 중증도에 따라 1~5종으로 구분됩니다. 3~5종 수술비는 개심술·혈관수술 등 고난도 수술을 보장합니다.',
+  '중입자방사선':'탄소 이온을 가속하여 암세포에 집중 조사하는 최신 치료법입니다. 정밀도가 높고 부작용이 적지만 비용이 매우 고가입니다.',
+  '표적항암':'암세포의 특정 단백질만 선택적으로 공격하는 항암제입니다. 정상세포 손상이 적지만 비급여 적용으로 수천만원에 달할 수 있습니다.',
+  '상급종합병원':'중증질환 진료 기능을 갖춘 대형 병원입니다. 서울대·세브란스·서울아산·삼성서울 등 전국 44개 기관이 지정되어 있습니다.',
+  '비급여암주요치료':'암 치료에 쓰이는 고가 비급여 치료법입니다. ① 다빈치로봇수술 ② 항암양성자방사선 ③ 비급여표적항암약물 ④ 특정면역항암약물이 해당하며 연간 최대 8천만원 보장됩니다.',
+  '납입면제':'특정 중증 질환 진단 시 남은 보험료를 내지 않아도 보장을 계속 받는 혜택입니다.',
+  '부담보':'특정 신체 부위나 질병에 대해 일정 기간 또는 영구적으로 보장하지 않는 조건입니다. 건강 고지 내용에 따라 가입 시 설정됩니다.',
+  '수술종류':'수술 난이도와 비용에 따라 1~5종으로 구분합니다. 5종이 가장 고난도(뇌·심장수술)이며 1종이 가장 단순합니다. 가입금액도 종이 높을수록 큽니다.',
+  '펫보장개시일':'반려동물 보험의 보장이 시작되는 날입니다. 질병은 계약일로부터 30일 후, 슬관절·고관절은 1년 후, 백내장·녹내장은 90일 후부터 보장이 시작됩니다. 상해는 계약 즉시 보장됩니다.',
+  '슬관절':'무릎 관절(슬개골)을 말합니다. 소형견에게 자주 발생하는 슬개골 탈구는 기본 의료비로 보장하지 않으며, 이 확장 특약에서 별도로 보장합니다. 보장개시일은 가입 후 1년입니다.',
+  '치과구강':'치과질환(치석제거·치아부정교합 포함) 및 구강질환입니다. 반려동물 치과 치료는 고가이며 별도 확장 특약으로 보장됩니다.',
+  'MRICT':'자기공명영상(MRI)과 컴퓨터단층촬영(CT)입니다. 반려동물 정밀 검사에 사용되며 1회 수십만원에서 100만원 이상 소요됩니다. 연간 1회 한도로 보장됩니다.',
+  '백내장녹내장':'눈 관련 질환입니다. 백내장은 수정체가 혼탁해지는 질환, 녹내장은 안압 상승으로 시신경이 손상되는 질환입니다. 포메라니안 등 소형견에서 발생 가능성이 있습니다.',
+  '이물제거':'반려동물이 이물질을 삼켰을 때 내시경으로 제거하거나 구토유도약물로 처치하는 방법입니다. 내시경 제거는 가입금액의 100%, 구토유도약물은 10% 한도 내 보상됩니다.',
+  '특정약물':'인슐린·항암제 등 반려동물 치료에 쓰이는 특정 고가 약물입니다. 약관에서 정한 범위 내 약물치료비를 연간 6회 한도로 보상합니다.',
+  '재활치료':'수술·질병 후 기능 회복을 위한 물리치료·수치료(수중재활) 등입니다. 반려동물 재활치료는 1회 수만~수십만원이며 연간 5회 한도로 보상됩니다.'
+};
+
+// ──────────────────────────────────────────
+// Tooltip — 단어 오른쪽 하단에 표시
+// ──────────────────────────────────────────
+const tt = document.getElementById('tt');
+let activeKey = null;
+let hideTimer = null;
+
+function showTip(e, key) {
+  e.stopPropagation();
+  if (!G[key]) return;
+
+  // 같은 단어 클릭 시 토글
+  if (activeKey === key) { hideTip(); return; }
+
+  clearTimeout(hideTimer);
+  activeKey = key;
+
+  tt.innerHTML = `<div class="tt-title">${key}</div>${G[key]}`;
+  tt.classList.remove('show');
+
+  // 위치 계산 — 단어 오른쪽 하단
+  requestAnimationFrame(() => {
+    const r = e.target.getBoundingClientRect();
+    const vw = window.innerWidth;
+    const tw = tt.offsetWidth || 272;
+    const th = tt.offsetHeight || 100;
+
+    // 수평: 단어 왼쪽 정렬, 화면 밖이면 오른쪽 끝 맞춤
+    let left = r.left;
+    if (left + tw > vw - 10) left = vw - tw - 10;
+    if (left < 8) left = 8;
+
+    // 수직: 기본 단어 바로 위, 위 공간 부족하면 아래
+    let top;
+    if (r.top - th - 8 >= 8) {
+      top = r.top + window.scrollY - th - 8;
+    } else {
+      top = r.bottom + window.scrollY + 6;
+    }
+
+    tt.style.left = left + 'px';
+    tt.style.top  = top  + 'px';
+    tt.classList.add('show');
+  });
+}
+
+function hideTip() {
+  tt.classList.remove('show');
+  activeKey = null;
+}
+
+document.addEventListener('click', e => {
+  if (!e.target.classList.contains('term')) hideTip();
+});
+document.addEventListener('scroll', hideTip, true);
+
+// ──────────────────────────────────────────
+// Policy switch
+// ──────────────────────────────────────────
+function switchPolicy(id) {
+  document.querySelectorAll('.policy-pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.policy-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('pane-' + id).classList.add('active');
+  document.getElementById('tab-' + id).classList.add('active');
+  // 탭 전환 시 전체 모드로 리셋
+  setTimeout(() => {
+    const sw = document.getElementById('swiper-' + id);
+    sw.querySelectorAll('.swiper-slide').forEach(s => s.classList.remove('hidden-slide'));
+    sw.classList.add('all-mode');
+    sw.scrollLeft = 0;
+    document.getElementById('dots-' + id).style.display = 'none';
+    // 전체 필터 버튼 활성화
+    const firstBtn = document.querySelector(`#filters-${id} .filter-btn`);
+    document.querySelectorAll(`#filters-${id} .filter-btn`).forEach(b => b.classList.remove('active'));
+    if (firstBtn) firstBtn.classList.add('active');
+    swiperState[id] = 0;
+    updateDots(id, 0);
+  }, 60);
+}
+
+// ──────────────────────────────────────────
+// Swiper — filter & navigation
+// ──────────────────────────────────────────
+const swiperState = { p1: 0, p2: 0, p3: 0 };
+
+function goSlide(pid, idx) {
+  const sw = document.getElementById('swiper-' + pid);
+  const visSlides = Array.from(sw.querySelectorAll('.swiper-slide:not(.hidden-slide)'));
+  const visIdx = visSlides.findIndex(s => parseInt(s.dataset.idx) === idx);
+  if (visIdx < 0) return;
+  // 각 슬라이드가 flex:0 0 100% 이므로 sw.offsetWidth * visIdx 가 정확한 위치
+  sw.scrollTo({ left: sw.offsetWidth * visIdx, behavior: 'smooth' });
+  swiperState[pid] = idx;
+  updateDots(pid, idx);
+}
+
+function filterSlide(pid, filterIdx, btn) {
+  document.querySelectorAll(`#filters-${pid} .filter-btn`).forEach(b => b.classList.remove('active','blue','green','red','purple'));
+  btn.classList.add('active');
+
+  const sw = document.getElementById('swiper-' + pid);
+  const slides = sw.querySelectorAll('.swiper-slide');
+  const dotsEl = document.getElementById('dots-' + pid);
+
+  if (filterIdx === 0) {
+    // 전체: 모든 슬라이드 표시 + 세로 스택 모드
+    slides.forEach(s => s.classList.remove('hidden-slide'));
+    sw.classList.add('all-mode');
+    sw.scrollLeft = 0;
+    dotsEl.style.display = 'none';
+    swiperState[pid] = 0;
+  } else {
+    // 특정 카테고리: 해당 슬라이드만 표시 + 가로 스와이프 모드
+    sw.classList.remove('all-mode');
+    slides.forEach(s => {
+      const idx = parseInt(s.dataset.idx);
+      s.classList.toggle('hidden-slide', idx !== filterIdx - 1);
+    });
+    dotsEl.style.display = 'flex';
+    setTimeout(() => goSlide(pid, filterIdx - 1), 30);
+  }
+  updateDots(pid);
+}
+
+function updateFilterBtn(pid, activeIdx) {
+  const btns = document.querySelectorAll(`#filters-${pid} .filter-btn`);
+  btns.forEach((b, i) => {
+    b.classList.remove('active','blue','green','red','purple');
+  });
+  if (activeIdx < btns.length) {
+    btns[activeIdx]?.classList.add('active');
+  }
+}
+
+function onSwipe(pid) {
+  const sw = document.getElementById('swiper-' + pid);
+  const slides = Array.from(sw.querySelectorAll('.swiper-slide:not(.hidden-slide)'));
+  const scrollLeft = sw.scrollLeft;
+  let closestIdx = 0;
+  let closestDist = Infinity;
+
+  slides.forEach((s, i) => {
+    const dist = Math.abs(s.offsetLeft - sw.offsetLeft - scrollLeft);
+    if (dist < closestDist) { closestDist = dist; closestIdx = parseInt(s.dataset.idx); }
+  });
+
+  if (swiperState[pid] !== closestIdx) {
+    swiperState[pid] = closestIdx;
+    updateDots(pid, closestIdx);
+  }
+}
+
+function updateDots(pid, activeIdx) {
+  const dotsEl = document.getElementById('dots-' + pid);
+  const sw = document.getElementById('swiper-' + pid);
+  const visSlides = sw.querySelectorAll('.swiper-slide:not(.hidden-slide)');
+  const dots = dotsEl.querySelectorAll('.dot');
+
+  // Rebuild dots based on visible slides
+  dotsEl.innerHTML = '';
+  visSlides.forEach((s, i) => {
+    const d = document.createElement('div');
+    const sIdx = parseInt(s.dataset.idx);
+    d.className = 'dot' + (sIdx === (activeIdx ?? swiperState[pid]) ? ' active' + (pid === 'p2' ? ' blue' : '') : '');
+    d.onclick = () => goSlide(pid, sIdx);
+    dotsEl.appendChild(d);
+  });
+}
+
+// ──────────────────────────────────────────
+// Init
+// ──────────────────────────────────────────
+// 초기 전체 모드 적용
+['p1','p2','p3'].forEach(pid => {
+  document.getElementById('swiper-' + pid).classList.add('all-mode');
+  document.getElementById('dots-' + pid).style.display = 'none';
+});
+
+// switchPolicy 탭 전환 시에도 전체 모드 + 전체 버튼 활성화 유지
+// IntersectionObserver for fade
+const io = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) { e.target.style.opacity='1'; e.target.style.transform='translateY(0)'; }
+  });
+}, { threshold: 0.04 });
+
+document.querySelectorAll('.glass').forEach((el, i) => {
+  el.style.opacity = '0';
+  el.style.transform = 'translateY(1rem)';
+  el.style.transition = `opacity .5s cubic-bezier(.16,1,.3,1) ${i*.04}s, transform .5s cubic-bezier(.16,1,.3,1) ${i*.04}s`;
+  io.observe(el);
+});
+</script>
+</body>
+</html>
